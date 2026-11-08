@@ -7,6 +7,9 @@
 ![Tests](https://img.shields.io/badge/Tests-117%20unit%20%2B%205%20IT-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
+### 🚀 [Try the Live Demo](https://erp-quickstart-demo.onrender.com)
+> **Credentials:** Tenant: `11111111-1111-1111-1111-111111111111` | Username: `admin` | Password: `AdminPassword1!`
+
 > Multi-tenant Spring Boot 4 security module: RBAC + ABAC, field-level BOLA prevention with masking, JWT + refresh rotation with reuse detection, Argon2id, and tamper-evident audit. Hexagonal + Spring Modulith, 117 verified tests.
 
 Most Spring Boot security libraries stop at "can this user log in?".
