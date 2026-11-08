@@ -6,6 +6,9 @@ WORKDIR /app
 # Copy the entire project
 COPY . .
 
+# Grant execute permission to the Maven wrapper (required on Linux)
+RUN chmod +x mvnw
+
 # Build the security module and the quickstart app
 RUN ./mvnw clean install -DskipTests
 
