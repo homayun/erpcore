@@ -1,0 +1,27 @@
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+*.log
+.env
+*.env
+.DS_Store
+examples/quickstart-app/target/
+phase-*.ps1
+phase-*.py
+
+# IDE
+.factorypath
+
+# Local backups
+.security-fix-backup/
+
+# Dev tooling scripts
+ExportProject.ps1
+phase-*.ps1

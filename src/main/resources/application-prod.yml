@@ -1,0 +1,38 @@
+# =====================================================================
+# Production profile:  -Dspring.profiles.active=prod
+# Nothing here has a safe default on purpose: a missing variable stops startup.
+# =====================================================================
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  h2:
+    console:
+      enabled: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    validate-on-migrate: true
+  jpa:
+    hibernate:
+      ddl-auto: validate        # Flyway owns the schema; Hibernate only verifies it
+    show-sql: false
+
+server:
+  # Resolve the real client IP from TRUSTED proxies only (used by login rate limiting).
+  # Set server.tomcat.remoteip.internal-proxies to your proxy/load-balancer addresses.
+  forward-headers-strategy: native
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: strict
+
+erp:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}     # random, >= 32 bytes; no fallback
+    redis:
+      enabled: ${ERP_REDIS_ENABLED:false}   # set true when running more than one node

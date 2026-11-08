@@ -1,0 +1,87 @@
+# =====================================================================
+# ErpCore Security Module - Application Configuration
+# =====================================================================
+# Standalone reference config for dev/test.
+# Override via environment variables or host application's config.
+#
+# Production checklist (MUST be honored before deployment):
+#   - JWT_SECRET         : set to a random 32+ byte value
+#   - REDIS_PASSWORD     : set if Redis requires authentication
+#   - spring.datasource  : replace H2 with PostgreSQL
+# =====================================================================
+
+spring:
+  application:
+    name: erp-security-module
+
+  datasource:
+    url: jdbc:h2:mem:security;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+
+  # Flyway owns the schema
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+      connect-timeout: 2s
+      repositories:
+        enabled: false
+
+erp:
+  security:
+    enabled: true
+    default-tenant-header: "X-Tenant-Id"
+
+    persistence:
+      type: jpa                # jpa (default) | memory
+
+    jwt:
+      issuer: erp-core
+      secret: ${JWT_SECRET:}   # leave empty in dev with erp.security.jwt.allow-insecure-default-secret=true
+      access-ttl: PT15M
+      clock-skew: PT30S
+
+    refresh-token:
+      ttl: P30D
+      cookie-name: "erp_refresh"
+
+    lockout:
+      max-failed-attempts: 5
+      lock-duration: PT15M
+
+    redis:
+      enabled: false
+
+    cleanup:
+      enabled: true
+      cron: "0 0 3 * * *"      # daily at 03:00 server time
+      retention: P7D           # keep revoked tokens 7 days for reuse detection
+
+    admin:
+      bootstrap:
+         enabled: true
+         Fill these in to seed a first admin user on startup:
+         tenant-id: 11111111-1111-1111-1111-111111111111
+         username: admin
+         password: AdminPassword1!
