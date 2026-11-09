@@ -14,8 +14,7 @@ public interface CredentialRepositoryPort {
 
     void updatePasswordHash(UUID actorId, String newHash);
 
-    // ---- Admin-facing operations (Phase 10) ----
-
+    // ---- Admin-facing operations ----
     List<Credential> findByTenant(UUID tenantId, int page, int size);
 
     long countByTenant(UUID tenantId);
@@ -23,4 +22,8 @@ public interface CredentialRepositoryPort {
     boolean existsByUsername(UUID tenantId, String username);
 
     void setEnabled(UUID actorId, UUID tenantId, boolean enabled);
+
+    void updateUser(UUID actorId, UUID tenantId, String newUsername, String newPasswordHash);
+
+    void deleteUser(UUID actorId, UUID tenantId);
 }

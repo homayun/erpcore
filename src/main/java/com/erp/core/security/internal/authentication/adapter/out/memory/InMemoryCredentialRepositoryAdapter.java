@@ -57,6 +57,28 @@ public class InMemoryCredentialRepositoryAdapter implements CredentialRepository
                 : v);
     }
 
+    @Override
+    public void updateUser(UUID actorId, UUID tenantId, String newUsername, String newPasswordHash) {
+        store.entrySet().stream()
+                .filter(e -> e.getValue().actorId().equals(actorId) && e.getValue().tenantId().equals(tenantId))
+                .findFirst()
+                .ifPresent(entry -> {
+                    Credential v = entry.getValue();
+                    Credential updated = new Credential(
+                            v.actorId(), v.tenantId(),
+                            newUsername != null ? newUsername : v.username(),
+                            newPasswordHash != null ? newPasswordHash : v.passwordHash(),
+                            v.enabled());
+                    store.remove(entry.getKey());
+                    save(updated);
+                });
+    }
+
+    @Override
+    public void deleteUser(UUID actorId, UUID tenantId) {
+        store.entrySet().removeIf(e -> e.getValue().actorId().equals(actorId) && e.getValue().tenantId().equals(tenantId));
+    }
+
     private String key(UUID tenantId, String username) {
         return tenantId + ":" + username.toLowerCase();
     }

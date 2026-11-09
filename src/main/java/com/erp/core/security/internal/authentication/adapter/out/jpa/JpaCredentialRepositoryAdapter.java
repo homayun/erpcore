@@ -52,4 +52,22 @@ public class JpaCredentialRepositoryAdapter implements CredentialRepositoryPort 
                 .filter(e -> e.getTenantId().equals(tenantId))
                 .ifPresent(e -> { e.setEnabled(enabled); repository.save(e); });
     }
+
+    @Override @Transactional
+    public void updateUser(UUID actorId, UUID tenantId, String newUsername, String newPasswordHash) {
+        repository.findById(actorId)
+                .filter(e -> e.getTenantId().equals(tenantId))
+                .ifPresent(e -> {
+                    if (newUsername != null) e.setUsername(newUsername);
+                    if (newPasswordHash != null) e.setPasswordHash(newPasswordHash);
+                    repository.save(e);
+                });
+    }
+
+    @Override @Transactional
+    public void deleteUser(UUID actorId, UUID tenantId) {
+        repository.findById(actorId)
+                .filter(e -> e.getTenantId().equals(tenantId))
+                .ifPresent(repository::delete);
+    }
 }

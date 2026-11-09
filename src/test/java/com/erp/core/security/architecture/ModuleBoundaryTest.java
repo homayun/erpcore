@@ -54,4 +54,24 @@ class ModuleBoundaryTest {
 
         rule.check(productionClasses);
     }
+
+    @Test
+    void adminMustNotBeAccessedBySecurity() {
+        ArchRule rule = classes()
+                .that().resideInAPackage("com.erp.core.security..")
+                .should().onlyDependOnClassesThat()
+                .resideOutsideOfPackage("com.erp.core.admin..")
+                .because("Security module must not depend on Admin module");
+        rule.check(productionClasses);
+    }
+
+    @Test
+    void adminMustOnlyUseSecurityApi() {
+        ArchRule rule = classes()
+                .that().resideInAPackage("com.erp.core.admin..")
+                .should().onlyDependOnClassesThat()
+                .resideOutsideOfPackage("com.erp.core.security.internal..")
+                .because("Admin must use security.api, not security.internal");
+        rule.check(productionClasses);
+    }
 }

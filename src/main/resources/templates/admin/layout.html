@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ErpCore Admin</title>
+    <link rel="stylesheet" th:href="@{/assets/style.css}">
+    <script th:src="@{/assets/htmx.min.js}" defer></script>
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar" style="position: fixed; top: 0; left: 250px; right: 0; z-index: 10;">
+        <div style="font-weight: bold;">ErpCore ERP</div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span th:text="${username}">Admin</span>
+            <a th:href="@{/logout}" class="btn btn-primary" style="text-decoration: none;">Logout</a>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" style="margin-top: 0;">
+        <div class="sidebar-header">Admin Panel</div>
+        <div class="sidebar-menu">
+            <a th:href="@{/admin/dashboard}" class="menu-item">Dashboard</a>
+            <a th:href="@{/admin/settings}" class="menu-item">Company Settings</a>
+            <a href="#" class="menu-item">Branches</a>
+            <a href="#" class="menu-item">Users</a>
+            <a href="#" class="menu-item">Roles</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" style="margin-left: 250px; margin-top: 60px;">
+        <div class="content-area" th:insert="~{::content}"></div>
+    </div>
+</body>
+</html>

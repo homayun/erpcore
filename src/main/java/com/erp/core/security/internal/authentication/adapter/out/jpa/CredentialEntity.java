@@ -53,6 +53,8 @@ public class CredentialEntity {
     public String getUsername() { return username; }
     public String getPasswordHash() { return passwordHash; }
     public boolean isEnabled() { return enabled; }
+
+    public void setUsername(String username) { this.username = username; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }

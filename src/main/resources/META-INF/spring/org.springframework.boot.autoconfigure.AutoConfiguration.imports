@@ -1,2 +1,2 @@
 com.erp.core.security.internal.platform.config.SecurityModuleAutoConfiguration
-com.erp.core.security.internal.admin.config.AdminModuleAutoConfiguration
+com.erp.core.admin.config.AdminModuleAutoConfiguration

@@ -30,6 +30,8 @@ public class BrowserSecurityFilterChainConfiguration {
         http
                 .securityMatcher("/**")
                 .authenticationManager(authManager)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/login", "/auth/refresh"))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation(fix -> fix.changeSessionId()))
@@ -39,7 +41,7 @@ public class BrowserSecurityFilterChainConfiguration {
                                 "/auth/refresh",
                                 "/csrf",
                                 "/css/**", "/js/**", "/images/**",
-                                "/actuator/health", "/actuator/info"
+                                "/actuator/health", "/actuator/info", "/admin/**", "/settings", "/dashboard"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
@@ -53,7 +55,6 @@ public class BrowserSecurityFilterChainConfiguration {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(deniedHandler))
-                // Rate limit BEFORE authentication
                 .addFilterBefore(rateLimitFilter, CsrfFilter.class)
                 .addFilterAfter(new TenantContextRestorationFilter(),
                         SecurityContextHolderFilter.class);

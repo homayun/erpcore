@@ -1,6 +1,7 @@
 package com.erp.core.security.internal.authorization.adapter.out.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,9 +23,13 @@ public interface SpringDataRolePermissionRepository
     boolean existsByRoleIdAndPermissionKey(
             @Param("roleId") UUID roleId, @Param("permissionKey") String permissionKey);
 
+    @Modifying
     @Query("DELETE FROM RolePermissionEntity rp " +
            "WHERE rp.roleId = :roleId AND rp.permissionKey = :permissionKey")
-    @org.springframework.data.jpa.repository.Modifying
     int deleteByRoleIdAndPermissionKey(
             @Param("roleId") UUID roleId, @Param("permissionKey") String permissionKey);
+
+    @Modifying
+    @Query("DELETE FROM RolePermissionEntity rp WHERE rp.roleId = :roleId")
+    void deleteByRoleId(@Param("roleId") UUID roleId);
 }
