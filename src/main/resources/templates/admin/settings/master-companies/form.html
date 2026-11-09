@@ -4,19 +4,19 @@
     <div th:fragment="form-content" class="modal-content">
         <h2 th:text="${mc == null ? 'Add New Master Company' : 'Edit Master Company'}">Add</h2>
         <form th:if="${mc == null}" hx-post="/admin/settings/master-companies" hx-target="#master-company-list" hx-swap="beforeend">
-            <div class="form-group"><label>Group Code</label><input type="text" name="code" required placeholder="e.g. GRP-002"></div>
-            <div class="form-group"><label>Group Name</label><input type="text" name="name" required placeholder="e.g. Bashundhara Group"></div>
-            <div style="text-align: right; margin-top: 1.5rem;">
-                <button type="button" class="btn close-modal" style="background:#666;">Cancel</button>
-                <button type="submit" class="btn">Save</button>
+            <div class="form-group"><label>Group Code</label><input type="text" name="code" required placeholder="e.g. JGI"></div>
+            <div class="form-group"><label>Group Name</label><input type="text" name="name" required placeholder="e.g. Jamuna Group"></div>
+            <div style="text-align: right; margin-top: 32px; display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="btn close-modal" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
             </div>
         </form>
         <form th:if="${mc != null}" th:attr="hx-post='/admin/settings/master-companies/' + ${mc.id}" hx-target="closest tr" hx-swap="outerHTML">
             <div class="form-group"><label>Group Code</label><input type="text" name="code" th:value="${mc.code}" required></div>
             <div class="form-group"><label>Group Name</label><input type="text" name="name" th:value="${mc.name}" required></div>
-            <div style="text-align: right; margin-top: 1.5rem;">
-                <button type="button" class="btn close-modal" style="background:#666;">Cancel</button>
-                <button type="submit" class="btn">Update</button>
+            <div style="text-align: right; margin-top: 32px; display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="btn close-modal" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update</button>
             </div>
         </form>
     </div>

@@ -4,24 +4,27 @@
 <body>
     <div th:fragment="content" id="master-companies-content">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2>Master Company (Group) Management</h2>
-                <div style="display: flex; gap: 10px;">
-                    <a href="/admin/settings/master-companies/export" class="btn" style="background:#28a745; text-decoration:none;">Export CSV</a>
+            <h2>Master Company (Group) Management</h2>
+            
+            <div class="toolbar">
+                <div class="filter-group">
+                    <a th:href="@{/admin/settings/master-companies(filter='all')}" hx-get="/admin/settings/master-companies?filter=all" hx-target="#master-companies-content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'all' ? 'active active-all' : ''}">All</a>
+                    <a th:href="@{/admin/settings/master-companies(filter='active')}" hx-get="/admin/settings/master-companies?filter=active" hx-target="#master-companies-content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'active' ? 'active active-active' : ''}">Active</a>
+                    <a th:href="@{/admin/settings/master-companies(filter='deleted')}" hx-get="/admin/settings/master-companies?filter=deleted" hx-target="#master-companies-content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'deleted' ? 'active active-deleted' : ''}">Deleted</a>
+                </div>
+
+                <div class="actions-group">
+                    <a href="/admin/settings/master-companies/export" class="btn" style="background:white; border:1px solid #e2e8f0; color:#1e293b;">📥 Export CSV</a>
                     
-                    <form hx-post="/admin/settings/master-companies/import" hx-encoding="multipart/form-data" hx-target="#master-companies-content" hx-swap="outerHTML" style="display: flex; gap: 5px; margin: 0;">
-                        <input type="file" name="file" accept=".csv" required style="padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
-                        <button type="submit" class="btn" style="background:#17a2b8;">Import</button>
+                    <form hx-post="/admin/settings/master-companies/import" hx-encoding="multipart/form-data" hx-target="#master-companies-content" hx-swap="outerHTML" style="margin: 0;">
+                        <div class="file-upload-wrapper">
+                            <label for="csvFile" class="file-upload-label">📤 Choose CSV</label>
+                            <input type="file" id="csvFile" name="file" accept=".csv" required onchange="this.form.requestSubmit();">
+                        </div>
                     </form>
 
-                    <button class="btn" hx-get="/admin/settings/master-companies/new" hx-target="#modal-container" hx-swap="innerHTML">+ Add</button>
+                    <button class="btn btn-primary" hx-get="/admin/settings/master-companies/new" hx-target="#modal-container" hx-swap="innerHTML">Add New</button>
                 </div>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <a th:href="@{/admin/settings/master-companies(filter='all')}" hx-get="/admin/settings/master-companies?filter=all" hx-target="#master-companies-content" hx-push-url="true" class="btn" th:classappend="${filter == 'all' ? 'active' : ''}" style="background:#666;">All</a>
-                <a th:href="@{/admin/settings/master-companies(filter='active')}" hx-get="/admin/settings/master-companies?filter=active" hx-target="#master-companies-content" hx-push-url="true" class="btn" th:classappend="${filter == 'active' ? 'active' : ''}" style="background:#28a745;">Active</a>
-                <a th:href="@{/admin/settings/master-companies(filter='deleted')}" hx-get="/admin/settings/master-companies?filter=deleted" hx-target="#master-companies-content" hx-push-url="true" class="btn" th:classappend="${filter == 'deleted' ? 'active' : ''}" style="background:#dc3545;">Deleted</a>
             </div>
             
             <table>

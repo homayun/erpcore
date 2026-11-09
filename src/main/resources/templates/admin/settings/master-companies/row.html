@@ -2,20 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
     <tr th:fragment="row" th:id="'row-' + ${mc.id}">
-        <td th:text="${mc.code}">GRP-002</td>
+        <td class="code-cell" th:text="${mc.code}">GRP-002</td>
         <td th:text="${mc.name}">Bashundhara Group</td>
         <td>
-            <span th:if="${mc.isActive}" style="color:green;">Active</span>
-            <span th:unless="${mc.isActive}" style="color:red;">Deleted</span>
+            <span th:if="${mc.isActive}" class="badge badge-success">Active</span>
+            <span th:unless="${mc.isActive}" class="badge badge-danger">Deleted</span>
         </td>
-        <td style="display: flex; gap: 5px;">
-            <button class="btn" style="background:#f39c12;" th:attr="hx-get='/admin/settings/master-companies/' + ${mc.id} + '/edit'" hx-target="#modal-container" hx-swap="innerHTML">Edit</button>
+        <td style="display: flex; gap: 8px;">
+            <button class="btn-action btn-edit" th:attr="hx-get='/admin/settings/master-companies/' + ${mc.id} + '/edit'" hx-target="#modal-container" hx-swap="innerHTML">Edit</button>
             
-            <button th:if="${mc.isActive}" class="btn" style="background:#dc3545;" th:attr="hx-post='/admin/settings/master-companies/' + ${mc.id} + '/soft-delete'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
+            <button th:if="${mc.isActive}" class="btn-action btn-soft-delete" th:attr="hx-post='/admin/settings/master-companies/' + ${mc.id} + '/soft-delete'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
             
-            <button th:unless="${mc.isActive}" class="btn" style="background:#28a745;" th:attr="hx-post='/admin/settings/master-companies/' + ${mc.id} + '/restore'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
+            <button th:unless="${mc.isActive}" class="btn-action btn-restore" th:attr="hx-post='/admin/settings/master-companies/' + ${mc.id} + '/restore'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
             
-            <button class="btn" style="background:#000;" th:attr="hx-delete='/admin/settings/master-companies/' + ${mc.id}" hx-confirm="Are you sure you want to PERMANENTLY delete this?" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Hard Delete</button>
+            <button class="btn-action btn-hard-delete" th:attr="hx-delete='/admin/settings/master-companies/' + ${mc.id}" hx-confirm="Are you sure you want to PERMANENTLY delete this group?" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>
         </td>
     </tr>
     <span th:fragment="empty"></span>
