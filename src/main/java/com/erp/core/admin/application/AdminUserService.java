@@ -4,23 +4,35 @@ import com.erp.core.admin.web.dto.CreateUserRequest;
 import com.erp.core.admin.web.dto.PageResponse;
 import com.erp.core.admin.web.dto.UpdateUserRequest;
 import com.erp.core.admin.web.dto.UserSummary;
+import com.erp.core.admin.adapter.out.jpa.RoleEntity;
+import com.erp.core.admin.adapter.out.jpa.SpringDataAdminRoleRepository;
 import com.erp.core.security.internal.authentication.domain.Credential;
 import com.erp.core.security.internal.authentication.domain.PasswordPolicy;
 import com.erp.core.security.internal.authentication.port.CredentialRepositoryPort;
 import com.erp.core.security.internal.authentication.port.PasswordHashingPort;
+import com.erp.core.security.internal.authorization.adapter.out.jpa.RoleAssignmentEntity;
+import com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataRoleAssignmentRepository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class AdminUserService {
 
     private final CredentialRepositoryPort repo;
     private final PasswordHashingPort hasher;
     private final PasswordPolicy policy;
+    private final SpringDataAdminRoleRepository roleRepo;
+    private final SpringDataRoleAssignmentRepository roleAssignmentRepo;
 
-    public AdminUserService(CredentialRepositoryPort repo, PasswordHashingPort hasher, PasswordPolicy policy) {
+    public AdminUserService(CredentialRepositoryPort repo, PasswordHashingPort hasher, PasswordPolicy policy,
+                            SpringDataAdminRoleRepository roleRepo, SpringDataRoleAssignmentRepository roleAssignmentRepo) {
         this.repo = repo;
         this.hasher = hasher;
         this.policy = policy;
+        this.roleRepo = roleRepo;
+        this.roleAssignmentRepo = roleAssignmentRepo;
     }
 
     public UserSummary create(CreateUserRequest req) {
@@ -64,5 +76,27 @@ public class AdminUserService {
 
     public void delete(UUID actorId, UUID tenantId) {
         repo.deleteUser(actorId, tenantId);
+    }
+
+    // ---- Role Management for User ----
+    public List<RoleEntity> getRoles(UUID tenantId) {
+        return roleRepo.findByTenantId(tenantId);
+    }
+
+    public List<UUID> getAssignedRoles(UUID actorId, UUID tenantId) {
+        return roleAssignmentRepo.findAll().stream()
+                .filter(ra -> ra.getActorId().equals(actorId) && ra.getTenantId().equals(tenantId))
+                .map(RoleAssignmentEntity::getRoleId)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void assignRoles(UUID actorId, UUID tenantId, List<UUID> roleIds) {
+        roleAssignmentRepo.deleteByActorId(actorId);
+        if (roleIds != null) {
+            for (UUID roleId : roleIds) {
+                roleAssignmentRepo.save(RoleAssignmentEntity.of(UUID.randomUUID(), actorId, roleId, tenantId));
+            }
+        }
     }
 }

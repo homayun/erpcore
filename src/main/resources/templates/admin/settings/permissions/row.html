@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <tr th:fragment="row" th:id="'row-' + ${p.permissionKey}">
+        <td class="code-cell" th:text="${p.permissionKey}">KEY</td>
+        <td>
+            <span class="perm-group-chip" th:text="${p.groupKey}">GROUP</span>
+        </td>
+        <td th:text="${p.description}">Description</td>
+        <td>
+            <span th:if="${p.sensitive}" class="perm-sensitive">SENSITIVE</span>
+            <span th:unless="${p.sensitive}" style="color:#94a3b8; font-size:12px;">—</span>
+        </td>
+        <td>
+            <span th:if="${p.isActive}" class="badge badge-success">Active</span>
+            <span th:unless="${p.isActive}" class="badge badge-danger">Deleted</span>
+        </td>
+        <td style="display: flex; gap: 8px;">
+            <button class="btn-action btn-edit"
+                    th:attr="hx-get='/admin/settings/permissions/' + ${p.permissionKey} + '/edit'"
+                    hx-target="#modal-container" hx-swap="innerHTML">Edit</button>
+            <button th:if="${p.isActive}" class="btn-action btn-soft-delete"
+                    th:attr="hx-post='/admin/settings/permissions/' + ${p.permissionKey} + '/soft-delete'"
+                    hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
+            <button th:unless="${p.isActive}" class="btn-action btn-restore"
+                    th:attr="hx-post='/admin/settings/permissions/' + ${p.permissionKey} + '/restore'"
+                    hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
+            <button class="btn-action btn-hard-delete"
+                    th:attr="hx-delete='/admin/settings/permissions/' + ${p.permissionKey}"
+                    hx-confirm="PERMANENTLY delete this permission? Roles using it will lose access."
+                    hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>
+        </td>
+    </tr>
+    <span th:fragment="empty"></span>
+</body>
+</html>

@@ -1,30 +1,35 @@
 package com.erp.core.admin.config;
 
-import com.erp.core.security.api.actor.CurrentActorProvider;
-import com.erp.core.security.api.authorization.AuthorizationPort;
 import com.erp.core.admin.adapter.out.jpa.JpaAdminRoleAdapter;
 import com.erp.core.admin.adapter.out.jpa.SpringDataAdminRoleRepository;
 import com.erp.core.admin.application.AdminBootstrapRunner;
 import com.erp.core.admin.application.AdminFieldRuleService;
 import com.erp.core.admin.application.AdminRoleService;
+import com.erp.core.admin.application.AdminPermissionService;
 import com.erp.core.admin.application.AdminUserService;
-import com.erp.core.admin.port.AdminRolePort;
-import com.erp.core.admin.web.LoginViewController;
-import com.erp.core.admin.web.CompanyWebController;
-import com.erp.core.admin.web.MasterCompanyWebController;
-import com.erp.core.admin.web.BranchWebController;
-import com.erp.core.admin.web.UserWebController;
-import com.erp.core.admin.web.RoleWebController;
+import com.erp.core.admin.internal.company.adapter.out.jpa.BranchRepository;
+import com.erp.core.admin.internal.company.adapter.out.jpa.CompanyRepository;
+import com.erp.core.admin.internal.company.adapter.out.jpa.MasterCompanyRepository;
 import com.erp.core.admin.internal.company.application.BranchService;
 import com.erp.core.admin.internal.company.application.CompanyService;
 import com.erp.core.admin.internal.company.application.MasterCompanyService;
-import com.erp.core.admin.internal.company.adapter.out.jpa.CompanyRepository;
-import com.erp.core.admin.internal.company.adapter.out.jpa.BranchRepository;
-import com.erp.core.admin.internal.company.adapter.out.jpa.MasterCompanyRepository;
+import com.erp.core.admin.internal.setting.adapter.out.jpa.CodeSettingRepository;
+import com.erp.core.admin.internal.setting.application.CodeSettingService;
+import com.erp.core.admin.port.AdminRolePort;
+import com.erp.core.admin.web.BranchWebController;
+import com.erp.core.admin.web.CodeSettingWebController;
+import com.erp.core.admin.web.CompanyWebController;
+import com.erp.core.admin.web.LoginViewController;
+import com.erp.core.admin.web.MasterCompanyWebController;
+import com.erp.core.admin.web.PermissionWebController;
+import com.erp.core.admin.web.RoleWebController;
+import com.erp.core.admin.web.UserWebController;
 import com.erp.core.admin.web.controller.AdminFieldRuleController;
 import com.erp.core.admin.web.controller.AdminRoleController;
 import com.erp.core.admin.web.controller.AdminUserController;
 import com.erp.core.admin.web.controller.FieldMaskingDemoController;
+import com.erp.core.security.api.actor.CurrentActorProvider;
+import com.erp.core.security.api.authorization.AuthorizationPort;
 import com.erp.core.security.internal.authentication.domain.PasswordPolicy;
 import com.erp.core.security.internal.authentication.port.CredentialRepositoryPort;
 import com.erp.core.security.internal.authentication.port.PasswordHashingPort;
@@ -43,7 +48,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @AutoConfiguration(after = com.erp.core.security.internal.platform.config.SecurityModuleAutoConfiguration.class)
@@ -54,7 +61,10 @@ public class AdminModuleAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(AdminModuleAutoConfiguration.class);
 
-    // ---- Company Web & Services ----
+    // ==================================================
+    // Company / Master Company / Branch
+    // ==================================================
+
     @Bean @ConditionalOnMissingBean
     public CompanyService companyService(CompanyRepository companyRepo, BranchRepository branchRepo, MasterCompanyRepository masterRepo) {
         return new CompanyService(companyRepo, branchRepo, masterRepo);
@@ -66,7 +76,7 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
-    public BranchService branchService(com.erp.core.admin.internal.company.adapter.out.jpa.BranchRepository branchRepo, CompanyRepository companyRepo) {
+    public BranchService branchService(BranchRepository branchRepo, CompanyRepository companyRepo) {
         return new BranchService(branchRepo, companyRepo);
     }
 
@@ -85,22 +95,45 @@ public class AdminModuleAutoConfiguration {
         return new BranchWebController(branchService);
     }
 
+    // ==================================================
+    // Code Setting
+    // ==================================================
+
     @Bean @ConditionalOnMissingBean
-    public UserWebController userWebController(AdminUserService userService) {
-        return new UserWebController(userService);
+    public CodeSettingService codeSettingService(CodeSettingRepository repo) {
+        return new CodeSettingService(repo);
     }
 
     @Bean @ConditionalOnMissingBean
-    public RoleWebController roleWebController(AdminRoleService roleService, com.erp.core.admin.adapter.out.jpa.SpringDataAdminRoleRepository roleRepo) {
-        return new RoleWebController(roleService, roleRepo);
+    public CodeSettingWebController codeSettingWebController(CodeSettingService service) {
+        return new CodeSettingWebController(service);
     }
 
-    // ---- User admin ----
+    // ==================================================
+    // Permission
+    // ==================================================
+
+    @Bean @ConditionalOnMissingBean
+    public AdminPermissionService adminPermissionService(com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataPermissionRepository repo) {
+        return new AdminPermissionService(repo);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public PermissionWebController permissionWebController(AdminPermissionService service) {
+        return new PermissionWebController(service);
+    }
+
+    // ==================================================
+    // User Admin
+    // ==================================================
+
     @Bean @ConditionalOnMissingBean
     public AdminUserService adminUserService(CredentialRepositoryPort repo,
                                              PasswordHashingPort hasher,
-                                             PasswordPolicy policy) {
-        return new AdminUserService(repo, hasher, policy);
+                                             PasswordPolicy policy,
+                                             SpringDataAdminRoleRepository roleRepo,
+                                             SpringDataRoleAssignmentRepository roleAssignmentRepo) {
+        return new AdminUserService(repo, hasher, policy, roleRepo, roleAssignmentRepo);
     }
 
     @Bean @ConditionalOnMissingBean
@@ -108,7 +141,15 @@ public class AdminModuleAutoConfiguration {
         return new AdminUserController(service);
     }
 
-    // ---- Role port ----
+    @Bean @ConditionalOnMissingBean
+    public UserWebController userWebController(AdminUserService service) {
+        return new UserWebController(service);
+    }
+
+    // ==================================================
+    // Role Admin
+    // ==================================================
+
     @Bean @ConditionalOnMissingBean(AdminRolePort.class)
     public AdminRolePort adminRolePort(
             ObjectProvider<SpringDataAdminRoleRepository> roleRepo,
@@ -134,6 +175,8 @@ public class AdminModuleAutoConfiguration {
             @Override public List<RoleView> listRoles(UUID t) { return List.of(); }
             @Override public void updateRole(UUID r, String n, int h) {}
             @Override public void deleteRole(UUID r) {}
+            @Override public Set<String> getAssignedPermissions(UUID r) { return Set.of(); }
+            @Override public void replacePermissions(UUID r, Collection<String> keys) {}
         };
     }
 
@@ -147,7 +190,17 @@ public class AdminModuleAutoConfiguration {
         return new AdminRoleController(service);
     }
 
-    // ---- Field rule admin ----
+    @Bean @ConditionalOnMissingBean
+    public RoleWebController roleWebController(AdminRoleService service,
+                                                SpringDataAdminRoleRepository roleRepo,
+                                                PermissionRepositoryPort permissionRepo) {
+        return new RoleWebController(service, roleRepo, permissionRepo);
+    }
+
+    // ==================================================
+    // Field Rule / Field Masking
+    // ==================================================
+
     @Bean @ConditionalOnMissingBean
     public AdminFieldRuleService adminFieldRuleService(FieldRuleRepositoryPort fieldRuleRepo,
                                                        PermissionRepositoryPort permissionRepo) {
@@ -167,7 +220,10 @@ public class AdminModuleAutoConfiguration {
         return new FieldMaskingDemoController(actorProvider, authorizationPort, maskingService);
     }
 
-    // ---- Bootstrap ----
+    // ==================================================
+    // Bootstrap
+    // ==================================================
+
     @Bean @ConditionalOnMissingBean
     public AdminBootstrapRunner adminBootstrapRunner(AdminBootstrapProperties props,
                                                      CredentialRepositoryPort credentialRepo,

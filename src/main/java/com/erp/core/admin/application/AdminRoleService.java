@@ -6,6 +6,7 @@ import com.erp.core.admin.web.dto.RoleSummary;
 import com.erp.core.admin.web.dto.UpdateRoleRequest;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class AdminRoleService {
@@ -50,5 +51,13 @@ public class AdminRoleService {
 
     public void delete(UUID roleId) {
         port.deleteRole(roleId);
+    }
+
+    public Set<String> getAssignedPermissions(UUID roleId) {
+        return port.getAssignedPermissions(roleId);
+    }
+
+    public void replacePermissions(UUID roleId, List<String> permissionKeys) {
+        port.replacePermissions(roleId, permissionKeys);
     }
 }

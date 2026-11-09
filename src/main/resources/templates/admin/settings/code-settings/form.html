@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="form-content" class="modal-content">
+        <h2 th:text="${c == null ? 'Add Code Setting' : 'Edit Code Setting'}">Add</h2>
+        <form th:if="${c == null}" hx-post="/admin/settings/code-settings" hx-target="#code-list" hx-swap="beforeend">
+            <div class="form-group"><label>Category</label><input type="text" name="category" required placeholder="e.g. DEPARTMENT"></div>
+            <div class="form-group"><label>Code</label><input type="text" name="code" required placeholder="e.g. HR"></div>
+            <div class="form-group"><label>Name</label><input type="text" name="name" required placeholder="e.g. Human Resources"></div>
+            <div style="text-align: right; margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn close-modal" style="background:#f1f5f9; color:#475569;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+        <form th:if="${c != null}" th:attr="hx-post='/admin/settings/code-settings/' + ${c.id}" hx-target="closest tr" hx-swap="outerHTML">
+            <div class="form-group"><label>Category</label><input type="text" name="category" th:value="${c.category}" required></div>
+            <div class="form-group"><label>Code</label><input type="text" name="code" th:value="${c.code}" required></div>
+            <div class="form-group"><label>Name</label><input type="text" name="name" th:value="${c.name}" required></div>
+            <div style="text-align: right; margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn close-modal" style="background:#f1f5f9; color:#475569;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

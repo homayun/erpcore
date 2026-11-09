@@ -18,6 +18,10 @@ public interface SpringDataRolePermissionRepository
     List<String> findPermissionKeysByActorAndTenant(
             @Param("actorId") UUID actorId, @Param("tenantId") UUID tenantId);
 
+    /** NEW: all permission keys assigned to a specific role. */
+    @Query("SELECT rp.permissionKey FROM RolePermissionEntity rp WHERE rp.roleId = :roleId")
+    List<String> findPermissionKeysByRoleId(@Param("roleId") UUID roleId);
+
     @Query("SELECT COUNT(rp) > 0 FROM RolePermissionEntity rp " +
            "WHERE rp.roleId = :roleId AND rp.permissionKey = :permissionKey")
     boolean existsByRoleIdAndPermissionKey(

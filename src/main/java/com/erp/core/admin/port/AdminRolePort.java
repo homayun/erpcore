@@ -1,5 +1,6 @@
 package com.erp.core.admin.port;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -19,4 +20,8 @@ public interface AdminRolePort {
 
     void updateRole(UUID roleId, String newName, int hierarchyLevel);
     void deleteRole(UUID roleId);
+
+    // NEW: bulk permission assignment for RBAC management UI
+    Set<String> getAssignedPermissions(UUID roleId);
+    void replacePermissions(UUID roleId, Collection<String> permissionKeys);
 }

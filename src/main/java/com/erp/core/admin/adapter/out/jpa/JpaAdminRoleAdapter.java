@@ -7,8 +7,10 @@ import com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataRo
 import com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataRolePermissionRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -72,10 +74,7 @@ public class JpaAdminRoleAdapter implements AdminRolePort {
     @Override @Transactional(readOnly = true)
     public List<RoleView> listRoles(UUID tenantId) {
         return roleRepo.findByTenantId(tenantId).stream().map(r -> {
-            var perms = new HashSet<String>();
-            rolePermissionRepo.findAll().stream()
-                    .filter(rp -> rp.getRoleId().equals(r.getId()))
-                    .forEach(rp -> perms.add(rp.getPermissionKey()));
+            var perms = new HashSet<String>(rolePermissionRepo.findPermissionKeysByRoleId(r.getId()));
             return new RoleView(r.getId(), r.getTenantId(), r.getName(), r.getHierarchyLevel(), perms, r.isActive());
         }).collect(Collectors.toList());
     }
@@ -94,5 +93,23 @@ public class JpaAdminRoleAdapter implements AdminRolePort {
         rolePermissionRepo.deleteByRoleId(roleId);
         roleAssignmentRepo.deleteByRoleId(roleId);
         roleRepo.deleteById(roleId);
+    }
+
+    @Override @Transactional(readOnly = true)
+    public Set<String> getAssignedPermissions(UUID roleId) {
+        return new HashSet<>(rolePermissionRepo.findPermissionKeysByRoleId(roleId));
+    }
+
+    @Override @Transactional
+    public void replacePermissions(UUID roleId, Collection<String> permissionKeys) {
+        rolePermissionRepo.deleteByRoleId(roleId);
+        if (permissionKeys != null && !permissionKeys.isEmpty()) {
+            rolePermissionRepo.flush();
+            List<RolePermissionEntity> entities = permissionKeys.stream()
+                    .distinct()
+                    .map(key -> new RolePermissionEntity(roleId, key))
+                    .toList();
+            rolePermissionRepo.saveAll(entities);
+        }
     }
 }

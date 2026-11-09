@@ -46,7 +46,7 @@ class SecurityFilterChainIntegrationTest {
 
     @Test
     void headersAppliedToUnauthenticatedResponse() throws Exception {
-        mockMvc.perform(get("/some-protected-page"))
+        mockMvc.perform(get("/api/something"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"))
                 .andExpect(header().string("X-Frame-Options", "DENY"))
@@ -56,7 +56,7 @@ class SecurityFilterChainIntegrationTest {
 
     @Test
     void unauthorizedReturnsJsonErrorCode() throws Exception {
-        mockMvc.perform(get("/some-protected-page"))
+        mockMvc.perform(get("/api/something"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("SEC-4010"));
     }

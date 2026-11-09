@@ -19,8 +19,6 @@ public class LoginViewController {
         return "dashboard";
     }
 
-    
-
     @GetMapping("/admin/settings/{page}")
     public String settingsPages(@PathVariable String page, HttpServletRequest request) {
         if (request.getHeader("HX-Request") != null) return "admin/settings/placeholder :: content";

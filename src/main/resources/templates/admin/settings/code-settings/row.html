@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <tr th:fragment="row" th:id="'row-' + ${c.id}">
+        <td th:text="${c.category}">CAT</td>
+        <td style="font-weight:600; color:#4f46e5;" th:text="${c.code}">CODE</td>
+        <td th:text="${c.name}">Name</td>
+        <td>
+            <span th:if="${c.isActive}" class="badge badge-success">Active</span>
+            <span th:unless="${c.isActive}" class="badge badge-danger">Deleted</span>
+        </td>
+        <td style="display: flex; gap: 8px;">
+            <button class="btn-action btn-edit" th:attr="hx-get='/admin/settings/code-settings/' + ${c.id} + '/edit'" hx-target="#modal-container" hx-swap="innerHTML">Edit</button>
+            <button th:if="${c.isActive}" class="btn-action btn-soft-delete" th:attr="hx-post='/admin/settings/code-settings/' + ${c.id} + '/soft-delete'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
+            <button th:unless="${c.isActive}" class="btn-action btn-restore" th:attr="hx-post='/admin/settings/code-settings/' + ${c.id} + '/restore'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
+            <button class="btn-action btn-hard-delete" th:attr="hx-delete='/admin/settings/code-settings/' + ${c.id}" hx-confirm="Permanently delete?" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>
+        </td>
+    </tr>
+    <span th:fragment="empty"></span>
+</body>
+</html>

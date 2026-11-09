@@ -2,9 +2,9 @@ package com.erp.core.admin.web;
 
 import com.erp.core.admin.application.AdminUserService;
 import com.erp.core.admin.web.dto.CreateUserRequest;
-import com.erp.core.admin.web.dto.UpdateUserRequest;
 import com.erp.core.admin.web.dto.UserSummary;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +25,7 @@ public class UserWebController {
         List<UserSummary> all = service.list(tenantId, 0, 100).items();
         if ("active".equals(filter)) all = all.stream().filter(UserSummary::enabled).toList();
         else if ("deleted".equals(filter)) all = all.stream().filter(u -> !u.enabled()).toList();
-        
+
         model.addAttribute("users", all);
         model.addAttribute("filter", filter);
         if (request.getHeader("HX-Request") != null) return "admin/settings/users/index :: content";
@@ -60,6 +60,21 @@ public class UserWebController {
     @DeleteMapping("/{id}")
     public String hardDelete(@PathVariable UUID id) {
         service.delete(id, tenantId);
+        return "admin/settings/users/row :: empty";
+    }
+
+    @GetMapping("/{id}/manage-roles")
+    public String manageRoles(@PathVariable UUID id, Model model) {
+        model.addAttribute("userId", id);
+        model.addAttribute("allRoles", service.getRoles(tenantId));
+        model.addAttribute("assignedRoles", service.getAssignedRoles(id, tenantId));
+        return "admin/settings/users/manage-roles :: form-content";
+    }
+
+    @PostMapping("/{id}/manage-roles")
+    public String saveRoles(@PathVariable UUID id, @RequestParam(required = false) List<UUID> roleIds, HttpServletResponse response) {
+        service.assignRoles(id, tenantId, roleIds);
+        response.setHeader("HX-Trigger", "closeModal");
         return "admin/settings/users/row :: empty";
     }
 }

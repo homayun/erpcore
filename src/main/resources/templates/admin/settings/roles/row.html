@@ -10,6 +10,7 @@
         </td>
         <td style="display: flex; gap: 8px;">
             <button class="btn-action btn-edit" th:attr="hx-get='/admin/settings/roles/' + ${r.id} + '/edit'" hx-target="#modal-container" hx-swap="innerHTML">Edit</button>
+            <button class="btn-action btn-permissions" th:attr="hx-get='/admin/settings/roles/' + ${r.id} + '/manage-permissions'" hx-target="#modal-container" hx-swap="innerHTML">Permissions</button>
             <button th:if="${r.isActive}" class="btn-action btn-soft-delete" th:attr="hx-post='/admin/settings/roles/' + ${r.id} + '/soft-delete'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
             <button th:unless="${r.isActive}" class="btn-action btn-restore" th:attr="hx-post='/admin/settings/roles/' + ${r.id} + '/restore'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
             <button class="btn-action btn-hard-delete" th:attr="hx-delete='/admin/settings/roles/' + ${r.id}" hx-confirm="Permanently delete?" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>

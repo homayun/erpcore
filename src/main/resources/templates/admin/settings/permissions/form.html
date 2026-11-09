@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="form-content" class="modal-content">
+        <h2 th:text="${p == null ? 'Add Permission' : 'Edit Permission'}">Add</h2>
+
+        <form th:if="${p == null}"
+              hx-post="/admin/settings/permissions"
+              hx-target="#permission-list"
+              hx-swap="beforeend">
+            <div class="form-group">
+                <label>Permission Key</label>
+                <input type="text" name="key" required
+                       placeholder="e.g. FINANCE_INVOICE_APPROVE"
+                       pattern="[A-Z][A-Z0-9_]{2,99}"
+                       title="UPPER_SNAKE_CASE, 3-100 chars">
+            </div>
+            <div class="form-group">
+                <label>Group</label>
+                <input type="text" name="group" required
+                       placeholder="e.g. FINANCE">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" name="description" required
+                       placeholder="e.g. Approve invoices">
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="sensitive" value="true">
+                    Sensitive (requires fresh authentication)
+                </label>
+            </div>
+            <div style="text-align: right; margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn close-modal" style="background:#f1f5f9; color:#475569;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+
+        <form th:if="${p != null}"
+              th:attr="hx-post='/admin/settings/permissions/' + ${p.permissionKey}"
+              hx-target="closest tr"
+              hx-swap="outerHTML">
+            <div class="form-group">
+                <label>Permission Key</label>
+                <input type="text" th:value="${p.permissionKey}" disabled
+                       style="background:#f1f5f9; color:#64748b;">
+            </div>
+            <div class="form-group">
+                <label>Group</label>
+                <input type="text" name="group" th:value="${p.groupKey}" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" name="description" th:value="${p.description}" required>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="sensitive" value="true" th:checked="${p.sensitive}">
+                    Sensitive (requires fresh authentication)
+                </label>
+            </div>
+            <div style="text-align: right; margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn close-modal" style="background:#f1f5f9; color:#475569;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

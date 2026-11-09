@@ -31,11 +31,12 @@ public class BrowserSecurityFilterChainConfiguration {
         AuthenticationEntryPoint entryPoint = new SmartAuthenticationEntryPoint(jsonEntryPoint);
 
         http
-                .securityMatcher("/**") // বাকি সব রিকোয়েস্ট (UI পেজ)
+                .securityMatcher("/**")
                 .authenticationManager(authManager)
+                // CSRF PROTECTED: Only /auth/refresh is exempt (it uses HttpOnly cookie with SameSite=Strict)
+                // /login is CSRF-protected to block Login CSRF attacks.
                 .csrf(csrf -> csrf
-                        // শুধু লগইন এবং রিফ্রেশের জন্য CSRF বন্ধ, বাকি সবের জন্য চালু থাকবে (নিরাপত্তার জন্য)
-                        .ignoringRequestMatchers("/login", "/auth/refresh"))
+                        .ignoringRequestMatchers("/auth/refresh"))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation(fix -> fix.changeSessionId()))
@@ -44,11 +45,10 @@ public class BrowserSecurityFilterChainConfiguration {
                                 "/login",
                                 "/auth/refresh",
                                 "/csrf",
-                                "/css/**", "/js/**", "/images/**", 
+                                "/css/**", "/js/**", "/images/**",
                                 "/assets/**",
                                 "/actuator/health", "/actuator/info"
                         ).permitAll()
-                        // /admin/**, /dashboard সহ বাকি সব পেজের জন্য লগইন বাধ্যতামূলক
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())

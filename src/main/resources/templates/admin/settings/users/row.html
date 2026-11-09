@@ -8,6 +8,7 @@
             <span th:unless="${u.enabled}" class="badge badge-danger">Deleted</span>
         </td>
         <td style="display: flex; gap: 8px;">
+            <button class="btn-action btn-edit" th:attr="hx-get='/admin/settings/users/' + ${u.actorId} + '/manage-roles'" hx-target="#modal-container" hx-swap="innerHTML" style="background:#e0e7ff; color:#4338ca;">Roles</button>
             <button th:if="${u.enabled}" class="btn-action btn-soft-delete" th:attr="hx-post='/admin/settings/users/' + ${u.actorId} + '/soft-delete'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
             <button th:unless="${u.enabled}" class="btn-action btn-restore" th:attr="hx-post='/admin/settings/users/' + ${u.actorId} + '/restore'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
             <button class="btn-action btn-hard-delete" th:attr="hx-delete='/admin/settings/users/' + ${u.actorId}" hx-confirm="Permanently delete?" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>

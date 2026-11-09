@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="form-content" class="modal-content modal-wide">
+        <h2>Manage Permissions</h2>
+        <form th:attr="hx-post='/admin/settings/roles/' + ${roleId} + '/manage-permissions'"
+              hx-target="#modal-container" hx-swap="none">
+            <div class="perm-list">
+                <p th:if="${#lists.isEmpty(allPermissions)}" class="perm-empty">No permissions available.</p>
+                <label th:each="perm : ${allPermissions}" class="perm-item">
+                    <input type="checkbox" name="permissionKeys"
+                           th:value="${perm.key.value}"
+                           th:checked="${assignedPermissions.contains(perm.key.value)}">
+                    <div class="perm-info">
+                        <div class="perm-key" th:text="${perm.key.value}">KEY</div>
+                        <div class="perm-desc" th:text="${perm.description}">Description</div>
+                    </div>
+                    <span class="perm-group-chip" th:text="${perm.group}">GROUP</span>
+                    <span th:if="${perm.sensitive}" class="perm-sensitive">SENSITIVE</span>
+                </label>
+            </div>
+            <div style="text-align: right; margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn close-modal" style="background:#f1f5f9; color:#475569;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Permissions</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

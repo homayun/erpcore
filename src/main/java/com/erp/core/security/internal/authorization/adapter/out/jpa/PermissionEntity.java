@@ -24,6 +24,9 @@ public class PermissionEntity {
     @Column(name = "is_sensitive", nullable = false)
     private boolean sensitive;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     protected PermissionEntity() {}
 
     public static PermissionEntity fromDomain(PermissionDefinition d) {
@@ -32,6 +35,7 @@ public class PermissionEntity {
         e.groupKey = d.group();
         e.description = d.description();
         e.sensitive = d.sensitive();
+        e.isActive = true;
         return e;
     }
 
@@ -44,7 +48,10 @@ public class PermissionEntity {
     public String getGroupKey() { return groupKey; }
     public String getDescription() { return description; }
     public boolean isSensitive() { return sensitive; }
+    public boolean isActive() { return isActive; }
+
     public void setGroupKey(String v) { this.groupKey = v; }
     public void setDescription(String v) { this.description = v; }
     public void setSensitive(boolean v) { this.sensitive = v; }
+    public void setActive(boolean v) { this.isActive = v; }
 }
