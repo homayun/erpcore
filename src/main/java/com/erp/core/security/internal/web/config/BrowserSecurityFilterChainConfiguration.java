@@ -7,13 +7,13 @@ import com.erp.core.security.internal.platform.config.SecurityProperties;
 import com.erp.core.security.internal.web.handler.JsonAccessDeniedHandler;
 import com.erp.core.security.internal.web.handler.JsonAuthenticationEntryPoint;
 import com.erp.core.security.internal.web.handler.JsonLogoutSuccessHandler;
+import com.erp.core.security.internal.web.handler.SmartAuthenticationEntryPoint;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
 
@@ -28,21 +28,13 @@ public class BrowserSecurityFilterChainConfiguration {
                                             LoginRateLimitFilter rateLimitFilter) throws Exception {
 
         AuthenticationManager authManager = new ProviderManager(provider);
-
-        // Spring Security 7 compatible custom entry point
-        // API-র জন্য JSON 401, ব্রাউজারের জন্য /login রিডাইরেক্ট
-        AuthenticationEntryPoint entryPoint = (request, response, authException) -> {
-            if (request.getRequestURI().startsWith("/api/")) {
-                jsonEntryPoint.commence(request, response, authException);
-            } else {
-                new LoginUrlAuthenticationEntryPoint("/login").commence(request, response, authException);
-            }
-        };
+        AuthenticationEntryPoint entryPoint = new SmartAuthenticationEntryPoint(jsonEntryPoint);
 
         http
-                .securityMatcher("/**")
+                .securityMatcher("/**") // বাকি সব রিকোয়েস্ট (UI পেজ)
                 .authenticationManager(authManager)
                 .csrf(csrf -> csrf
+                        // শুধু লগইন এবং রিফ্রেশের জন্য CSRF বন্ধ, বাকি সবের জন্য চালু থাকবে (নিরাপত্তার জন্য)
                         .ignoringRequestMatchers("/login", "/auth/refresh"))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
@@ -53,9 +45,10 @@ public class BrowserSecurityFilterChainConfiguration {
                                 "/auth/refresh",
                                 "/csrf",
                                 "/css/**", "/js/**", "/images/**", 
-                                "/assets/**", /* এই লাইনটি যোগ করা হলো HTMX এবং CSS এর জন্য */
+                                "/assets/**",
                                 "/actuator/health", "/actuator/info"
                         ).permitAll()
+                        // /admin/**, /dashboard সহ বাকি সব পেজের জন্য লগইন বাধ্যতামূলক
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())

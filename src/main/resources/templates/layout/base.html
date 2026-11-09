@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(pageTitle, content)">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${pageTitle} ?: 'ErpCore'">ErpCore</title>
+    <title th:text="${pageTitle}">ErpCore</title>
     <link rel="stylesheet" th:href="@{/assets/style.css}">
     <script th:src="@{/assets/htmx.min.js}"></script>
 </head>
-<body>
+<body hx-headers='{"X-CSRF-TOKEN": "${_csrf.token}"}'>
     <!-- টপ বার -->
     <header class="topbar">
         <div class="topbar-left">
@@ -61,14 +61,13 @@
             </nav>
         </aside>
 
-        <!-- মেইন কন্টেন্ট এরিয়া (HTMX এখানে লোড হবে) -->
+        <!-- মেইন কন্টেন্ট এরিয়া -->
         <main class="main-content" id="main-content">
-            <!-- ডিফল্টভাবে পেজের কন্টেন্ট এখানে th:insert এর মাধ্যমে আসবে -->
-            <div th:insert="${content}"></div>
+            <!-- এখানে ডাইনামিক কন্টেন্ট বসবে -->
+            <div th:replace="${content}"></div>
         </main>
     </div>
 
-    <!-- এক্সটার্নাল জেএস (CSP এর জন্য নিরাপদ) -->
     <script th:src="@{/js/layout.js}"></script>
 </body>
 </html>

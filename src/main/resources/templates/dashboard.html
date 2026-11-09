@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: html}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Dashboard', ~{::#dashboard-content})}">
 <head>
     <title>Dashboard</title>
 </head>
 <body>
-    <!-- এই div-এর ভেতরের কন্টেন্ট base.html এর #main-content এ বসবে -->
-    <div th:fragment="content">
+    <div th:fragment="content" id="dashboard-content">
         <h2>Welcome to ERP Dashboard!</h2>
         <div class="card">
             <p>Select a menu item from the left sidebar to get started.</p>

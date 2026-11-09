@@ -30,7 +30,7 @@ public class ApiSecurityFilterChainConfiguration {
         converter.setJwtGrantedAuthoritiesConverter(authorities);
 
         http
-                .securityMatcher("/api/**", "/admin/**")
+                .securityMatcher("/api/**")
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
