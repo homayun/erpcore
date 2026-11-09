@@ -21,12 +21,12 @@ public class AdminRoleService {
         if (req.name() == null || req.name().isBlank()) throw new IllegalArgumentException("name is required");
         int level = req.hierarchyLevel() == null ? 10 : req.hierarchyLevel();
         UUID roleId = port.createRole(req.tenantId(), req.name(), level);
-        return new RoleSummary(roleId, req.tenantId(), req.name(), level, java.util.Set.of());
+        return new RoleSummary(roleId, req.tenantId(), req.name(), level, java.util.Set.of(), true);
     }
 
     public List<RoleSummary> list(UUID tenantId) {
         return port.listRoles(tenantId).stream()
-                .map(v -> new RoleSummary(v.id(), v.tenantId(), v.name(), v.hierarchyLevel(), v.permissionKeys()))
+                .map(v -> new RoleSummary(v.id(), v.tenantId(), v.name(), v.hierarchyLevel(), v.permissionKeys(), v.isActive()))
                 .toList();
     }
 

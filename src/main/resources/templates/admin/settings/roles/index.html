@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Roles', ~{::#content})}">
+<head><title>Roles</title></head>
+<body>
+    <div th:fragment="content" id="content">
+        <div class="card">
+            <h2>Role Management</h2>
+            <div class="toolbar">
+                <div class="filter-group">
+                    <a th:href="@{/admin/settings/roles(filter='all')}" hx-get="/admin/settings/roles?filter=all" hx-target="#content" class="filter-btn" th:classappend="${filter == 'all' ? 'active active-all' : ''}">All</a>
+                    <a th:href="@{/admin/settings/roles(filter='active')}" hx-get="/admin/settings/roles?filter=active" hx-target="#content" class="filter-btn" th:classappend="${filter == 'active' ? 'active active-active' : ''}">Active</a>
+                    <a th:href="@{/admin/settings/roles(filter='deleted')}" hx-get="/admin/settings/roles?filter=deleted" hx-target="#content" class="filter-btn" th:classappend="${filter == 'deleted' ? 'active active-deleted' : ''}">Deleted</a>
+                </div>
+                <div class="actions-group">
+                    <button class="btn btn-primary" hx-get="/admin/settings/roles/new" hx-target="#modal-container" hx-swap="innerHTML">Add Role</button>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Role Name</th><th>Level</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="role-list">
+                    <th:block th:each="r : ${roles}">
+                        <tr th:replace="~{admin/settings/roles/row :: row}"></tr>
+                    </th:block>
+                </tbody>
+            </table>
+        </div>
+        <div id="modal-container" style="display: none;" class="modal-backdrop"></div>
+    </div>
+</body>
+</html>

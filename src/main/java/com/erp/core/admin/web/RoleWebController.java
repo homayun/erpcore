@@ -1,0 +1,77 @@
+package com.erp.core.admin.web;
+
+import com.erp.core.admin.adapter.out.jpa.SpringDataAdminRoleRepository;
+import com.erp.core.admin.application.AdminRoleService;
+import com.erp.core.admin.web.dto.CreateRoleRequest;
+import com.erp.core.admin.web.dto.RoleSummary;
+import com.erp.core.admin.web.dto.UpdateRoleRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@Controller
+@RequestMapping("/admin/settings/roles")
+public class RoleWebController {
+    private final AdminRoleService service;
+    private final SpringDataAdminRoleRepository roleRepo;
+    private final UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+
+    public RoleWebController(AdminRoleService service, SpringDataAdminRoleRepository roleRepo) {
+        this.service = service;
+        this.roleRepo = roleRepo;
+    }
+
+    @GetMapping
+    public String list(HttpServletRequest request, Model model, @RequestParam(defaultValue = "all") String filter) {
+        List<RoleSummary> all = service.list(tenantId);
+        if ("active".equals(filter)) all = all.stream().filter(r -> roleRepo.findById(r.id()).map(e -> e.isActive()).orElse(false)).toList();
+        else if ("deleted".equals(filter)) all = all.stream().filter(r -> !roleRepo.findById(r.id()).map(e -> e.isActive()).orElse(true)).toList();
+        
+        model.addAttribute("roles", all);
+        model.addAttribute("filter", filter);
+        if (request.getHeader("HX-Request") != null) return "admin/settings/roles/index :: content";
+        return "admin/settings/roles/index";
+    }
+
+    @GetMapping("/new")
+    public String newForm() { return "admin/settings/roles/form :: form-content"; }
+
+    @PostMapping
+    public String create(@RequestParam String name, @RequestParam int level, Model model) {
+        service.create(new CreateRoleRequest(tenantId, name, level));
+        model.addAttribute("roles", service.list(tenantId));
+        model.addAttribute("filter", "all");
+        return "admin/settings/roles/index :: content";
+    }
+
+    @PostMapping("/{id}")
+    public String update(@PathVariable UUID id, @RequestParam String name, @RequestParam int level, Model model) {
+        service.update(id, new UpdateRoleRequest(name, level));
+        model.addAttribute("r", service.list(tenantId).stream().filter(x -> x.id().equals(id)).findFirst().orElseThrow());
+        return "admin/settings/roles/row :: row";
+    }
+
+    @PostMapping("/{id}/soft-delete")
+    public String softDelete(@PathVariable UUID id, Model model) {
+        roleRepo.findById(id).ifPresent(e -> { e.setActive(false); roleRepo.save(e); });
+        model.addAttribute("r", service.list(tenantId).stream().filter(x -> x.id().equals(id)).findFirst().orElseThrow());
+        return "admin/settings/roles/row :: row";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restore(@PathVariable UUID id, Model model) {
+        roleRepo.findById(id).ifPresent(e -> { e.setActive(true); roleRepo.save(e); });
+        model.addAttribute("r", service.list(tenantId).stream().filter(x -> x.id().equals(id)).findFirst().orElseThrow());
+        return "admin/settings/roles/row :: row";
+    }
+
+    @DeleteMapping("/{id}")
+    public String hardDelete(@PathVariable UUID id) {
+        service.delete(id);
+        return "admin/settings/roles/row :: empty";
+    }
+}

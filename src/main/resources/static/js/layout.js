@@ -56,7 +56,7 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
     if (evt.detail.target.id === 'modal-container') {
         modal.style.display = 'flex';
     }
-    if (evt.detail.target.id === 'company-list' || evt.detail.target.id === 'master-company-list') {
+    if (evt.detail.target.id === 'company-list' || evt.detail.target.id === 'master-company-list' || evt.detail.target.id === 'user-list' || evt.detail.target.id === 'role-list') {
         modal.style.display = 'none';
         modal.innerHTML = '';
     }

@@ -76,7 +76,7 @@ public class JpaAdminRoleAdapter implements AdminRolePort {
             rolePermissionRepo.findAll().stream()
                     .filter(rp -> rp.getRoleId().equals(r.getId()))
                     .forEach(rp -> perms.add(rp.getPermissionKey()));
-            return new RoleView(r.getId(), r.getTenantId(), r.getName(), r.getHierarchyLevel(), perms);
+            return new RoleView(r.getId(), r.getTenantId(), r.getName(), r.getHierarchyLevel(), perms, r.isActive());
         }).collect(Collectors.toList());
     }
 

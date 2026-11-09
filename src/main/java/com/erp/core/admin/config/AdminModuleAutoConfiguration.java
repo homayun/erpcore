@@ -13,6 +13,8 @@ import com.erp.core.admin.web.LoginViewController;
 import com.erp.core.admin.web.CompanyWebController;
 import com.erp.core.admin.web.MasterCompanyWebController;
 import com.erp.core.admin.web.BranchWebController;
+import com.erp.core.admin.web.UserWebController;
+import com.erp.core.admin.web.RoleWebController;
 import com.erp.core.admin.internal.company.application.BranchService;
 import com.erp.core.admin.internal.company.application.CompanyService;
 import com.erp.core.admin.internal.company.application.MasterCompanyService;
@@ -81,6 +83,16 @@ public class AdminModuleAutoConfiguration {
     @Bean @ConditionalOnMissingBean
     public BranchWebController branchWebController(BranchService branchService) {
         return new BranchWebController(branchService);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public UserWebController userWebController(AdminUserService userService) {
+        return new UserWebController(userService);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public RoleWebController roleWebController(AdminRoleService roleService, com.erp.core.admin.adapter.out.jpa.SpringDataAdminRoleRepository roleRepo) {
+        return new RoleWebController(roleService, roleRepo);
     }
 
     // ---- User admin ----

@@ -7,7 +7,7 @@ import java.util.UUID;
 public interface AdminRolePort {
 
     record RoleView(UUID id, UUID tenantId, String name, int hierarchyLevel,
-                    Set<String> permissionKeys) {}
+                    Set<String> permissionKeys, boolean isActive) {}
 
     UUID ensureRole(UUID tenantId, String name, int hierarchyLevel);
     UUID createRole(UUID tenantId, String name, int hierarchyLevel);
