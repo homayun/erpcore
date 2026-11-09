@@ -3,25 +3,34 @@ package com.erp.core.admin.web;
 import com.erp.core.admin.application.AdminUserService;
 import com.erp.core.admin.web.dto.CreateUserRequest;
 import com.erp.core.admin.web.dto.UserSummary;
+import com.erp.core.security.internal.authorization.domain.PermissionDefinition;
+import com.erp.core.security.internal.authorization.port.PermissionRepositoryPort;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 @Controller
 @RequestMapping("/admin/settings/users")
 public class UserWebController {
+
     private final AdminUserService service;
+    private final PermissionRepositoryPort permissionRepo;
     private final UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
-    public UserWebController(AdminUserService service) { this.service = service; }
+    public UserWebController(AdminUserService service, PermissionRepositoryPort permissionRepo) {
+        this.service = service;
+        this.permissionRepo = permissionRepo;
+    }
 
     @GetMapping
-    public String list(HttpServletRequest request, Model model, @RequestParam(defaultValue = "all") String filter) {
+    public String list(HttpServletRequest request, Model model,
+                       @RequestParam(defaultValue = "all") String filter) {
         List<UserSummary> all = service.list(tenantId, 0, 100).items();
         if ("active".equals(filter)) all = all.stream().filter(UserSummary::enabled).toList();
         else if ("deleted".equals(filter)) all = all.stream().filter(u -> !u.enabled()).toList();
@@ -46,14 +55,16 @@ public class UserWebController {
     @PostMapping("/{id}/soft-delete")
     public String softDelete(@PathVariable UUID id, Model model) {
         service.setEnabled(id, tenantId, false);
-        model.addAttribute("u", service.list(tenantId, 0, 100).items().stream().filter(x -> x.actorId().equals(id)).findFirst().orElseThrow());
+        model.addAttribute("u", service.list(tenantId, 0, 100).items().stream()
+                .filter(x -> x.actorId().equals(id)).findFirst().orElseThrow());
         return "admin/settings/users/row :: row";
     }
 
     @PostMapping("/{id}/restore")
     public String restore(@PathVariable UUID id, Model model) {
         service.setEnabled(id, tenantId, true);
-        model.addAttribute("u", service.list(tenantId, 0, 100).items().stream().filter(x -> x.actorId().equals(id)).findFirst().orElseThrow());
+        model.addAttribute("u", service.list(tenantId, 0, 100).items().stream()
+                .filter(x -> x.actorId().equals(id)).findFirst().orElseThrow());
         return "admin/settings/users/row :: row";
     }
 
@@ -63,6 +74,7 @@ public class UserWebController {
         return "admin/settings/users/row :: empty";
     }
 
+    // ---- Manage Roles (existing) ----
     @GetMapping("/{id}/manage-roles")
     public String manageRoles(@PathVariable UUID id, Model model) {
         model.addAttribute("userId", id);
@@ -72,8 +84,34 @@ public class UserWebController {
     }
 
     @PostMapping("/{id}/manage-roles")
-    public String saveRoles(@PathVariable UUID id, @RequestParam(required = false) List<UUID> roleIds, HttpServletResponse response) {
+    public String saveRoles(@PathVariable UUID id,
+                            @RequestParam(required = false) List<UUID> roleIds,
+                            HttpServletResponse response) {
         service.assignRoles(id, tenantId, roleIds);
+        response.setHeader("HX-Trigger", "closeModal");
+        return "admin/settings/users/row :: empty";
+    }
+
+    // ---- Manage Direct Permissions (NEW) ----
+    @GetMapping("/{id}/manage-permissions")
+    public String managePermissions(@PathVariable UUID id, Model model) {
+        List<PermissionDefinition> all = permissionRepo.findAll().stream()
+                .sorted(Comparator.comparing(
+                        (PermissionDefinition p) -> p.group())
+                        .thenComparing(p -> p.key().value()))
+                .toList();
+
+        model.addAttribute("userId", id);
+        model.addAttribute("allPermissions", all);
+        model.addAttribute("assignedPermissions", service.getAssignedDirectPermissions(id, tenantId));
+        return "admin/settings/users/manage-permissions :: form-content";
+    }
+
+    @PostMapping("/{id}/manage-permissions")
+    public String savePermissions(@PathVariable UUID id,
+                                  @RequestParam(required = false) List<String> permissionKeys,
+                                  HttpServletResponse response) {
+        service.replaceDirectPermissions(id, tenantId, permissionKeys);
         response.setHeader("HX-Trigger", "closeModal");
         return "admin/settings/users/row :: empty";
     }

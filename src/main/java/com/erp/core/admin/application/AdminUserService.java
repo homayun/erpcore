@@ -12,9 +12,13 @@ import com.erp.core.security.internal.authentication.port.CredentialRepositoryPo
 import com.erp.core.security.internal.authentication.port.PasswordHashingPort;
 import com.erp.core.security.internal.authorization.adapter.out.jpa.RoleAssignmentEntity;
 import com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataRoleAssignmentRepository;
+import com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataUserPermissionRepository;
+import com.erp.core.security.internal.authorization.adapter.out.jpa.UserPermissionEntity;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,14 +29,20 @@ public class AdminUserService {
     private final PasswordPolicy policy;
     private final SpringDataAdminRoleRepository roleRepo;
     private final SpringDataRoleAssignmentRepository roleAssignmentRepo;
+    private final SpringDataUserPermissionRepository userPermRepo;
 
-    public AdminUserService(CredentialRepositoryPort repo, PasswordHashingPort hasher, PasswordPolicy policy,
-                            SpringDataAdminRoleRepository roleRepo, SpringDataRoleAssignmentRepository roleAssignmentRepo) {
+    public AdminUserService(CredentialRepositoryPort repo,
+                            PasswordHashingPort hasher,
+                            PasswordPolicy policy,
+                            SpringDataAdminRoleRepository roleRepo,
+                            SpringDataRoleAssignmentRepository roleAssignmentRepo,
+                            SpringDataUserPermissionRepository userPermRepo) {
         this.repo = repo;
         this.hasher = hasher;
         this.policy = policy;
         this.roleRepo = roleRepo;
         this.roleAssignmentRepo = roleAssignmentRepo;
+        this.userPermRepo = userPermRepo;
     }
 
     public UserSummary create(CreateUserRequest req) {
@@ -75,10 +85,12 @@ public class AdminUserService {
     }
 
     public void delete(UUID actorId, UUID tenantId) {
+        userPermRepo.deleteByActorId(actorId);
+        roleAssignmentRepo.deleteByActorId(actorId);
         repo.deleteUser(actorId, tenantId);
     }
 
-    // ---- Role Management for User ----
+    // ---- Roles ----
     public List<RoleEntity> getRoles(UUID tenantId) {
         return roleRepo.findByTenantId(tenantId);
     }
@@ -96,6 +108,24 @@ public class AdminUserService {
         if (roleIds != null) {
             for (UUID roleId : roleIds) {
                 roleAssignmentRepo.save(RoleAssignmentEntity.of(UUID.randomUUID(), actorId, roleId, tenantId));
+            }
+        }
+    }
+
+    // ---- Direct Permissions ----
+    @Transactional(readOnly = true)
+    public Set<String> getAssignedDirectPermissions(UUID actorId, UUID tenantId) {
+        return new HashSet<>(userPermRepo.findPermissionKeysByActor(actorId, tenantId));
+    }
+
+    @Transactional
+    public void replaceDirectPermissions(UUID actorId, UUID tenantId, List<String> permissionKeys) {
+        userPermRepo.deleteByActorId(actorId);
+        userPermRepo.flush();
+        if (permissionKeys != null && !permissionKeys.isEmpty()) {
+            Set<String> unique = new HashSet<>(permissionKeys);
+            for (String key : unique) {
+                userPermRepo.save(new UserPermissionEntity(actorId, key, tenantId));
             }
         }
     }

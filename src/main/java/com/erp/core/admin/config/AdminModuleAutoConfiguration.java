@@ -132,8 +132,9 @@ public class AdminModuleAutoConfiguration {
                                              PasswordHashingPort hasher,
                                              PasswordPolicy policy,
                                              SpringDataAdminRoleRepository roleRepo,
-                                             SpringDataRoleAssignmentRepository roleAssignmentRepo) {
-        return new AdminUserService(repo, hasher, policy, roleRepo, roleAssignmentRepo);
+                                             SpringDataRoleAssignmentRepository roleAssignmentRepo,
+                                             com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataUserPermissionRepository userPermRepo) {
+        return new AdminUserService(repo, hasher, policy, roleRepo, roleAssignmentRepo, userPermRepo);
     }
 
     @Bean @ConditionalOnMissingBean
@@ -142,8 +143,9 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
-    public UserWebController userWebController(AdminUserService service) {
-        return new UserWebController(service);
+    public UserWebController userWebController(AdminUserService service,
+                                                PermissionRepositoryPort permissionRepo) {
+        return new UserWebController(service, permissionRepo);
     }
 
     // ==================================================

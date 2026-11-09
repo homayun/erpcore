@@ -330,13 +330,15 @@ public class SecurityModuleAutoConfiguration {
     @Bean @ConditionalOnMissingBean(RoleRepositoryPort.class)
     @ConditionalOnProperty(name = "erp.security.persistence.type", havingValue = "jpa", matchIfMissing = true)
     public RoleRepositoryPort roleRepositoryPort(
-            ObjectProvider<SpringDataRolePermissionRepository> repoProvider) {
-        SpringDataRolePermissionRepository repo = repoProvider.getIfAvailable();
-        if (repo != null) {
-            log.info("RoleRepositoryPort: using JPA");
-            return new JpaRoleRepositoryAdapter(repo);
+            ObjectProvider<SpringDataRolePermissionRepository> rolePermProvider,
+            ObjectProvider<com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataUserPermissionRepository> userPermProvider) {
+        SpringDataRolePermissionRepository rolePermRepo = rolePermProvider.getIfAvailable();
+        com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataUserPermissionRepository userPermRepo = userPermProvider.getIfAvailable();
+        if (rolePermRepo != null && userPermRepo != null) {
+            log.info("RoleRepositoryPort: using JPA (role + direct permissions)");
+            return new JpaRoleRepositoryAdapter(rolePermRepo, userPermRepo);
         }
-        log.info("RoleRepositoryPort: SpringDataRolePermissionRepository not available -> noop");
+        log.info("RoleRepositoryPort: JPA repos not available -> noop");
         return (actorId, tenantId) -> Set.of();
     }
     @Bean @ConditionalOnMissingBean(RoleRepositoryPort.class)
