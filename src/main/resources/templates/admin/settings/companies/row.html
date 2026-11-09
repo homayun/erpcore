@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <tr th:fragment="company-row" id="company-row">
+        <td th:text="${company.name}">Acme Corp</td>
+        <td th:text="${company.registrationNumber}">REG-003</td>
+        <td th:text="${company.taxId}">TAX-003</td>
+        <td><span style="color:green;">Active</span></td>
+        <td>
+            <button class="btn" style="background:#dc3545;" 
+                    th:attr="hx-delete='/admin/settings/companies/' + ${company.id}" 
+                    hx-target="closest tr" 
+                    hx-swap="outerHTML swap:0.5s">Delete</button>
+        </td>
+    </tr>
+    <span th:fragment="empty"></span>
+</body>
+</html>

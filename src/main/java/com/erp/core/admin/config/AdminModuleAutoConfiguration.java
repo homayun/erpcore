@@ -9,6 +9,11 @@ import com.erp.core.admin.application.AdminFieldRuleService;
 import com.erp.core.admin.application.AdminRoleService;
 import com.erp.core.admin.application.AdminUserService;
 import com.erp.core.admin.port.AdminRolePort;
+import com.erp.core.admin.web.LoginViewController;
+import com.erp.core.admin.web.CompanyWebController;
+import com.erp.core.admin.internal.company.application.CompanyService;
+import com.erp.core.admin.internal.company.adapter.out.jpa.CompanyRepository;
+import com.erp.core.admin.internal.company.adapter.out.jpa.BranchRepository;
 import com.erp.core.admin.web.controller.AdminFieldRuleController;
 import com.erp.core.admin.web.controller.AdminRoleController;
 import com.erp.core.admin.web.controller.AdminUserController;
@@ -29,17 +34,29 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.UUID;
 
 @AutoConfiguration(after = com.erp.core.security.internal.platform.config.SecurityModuleAutoConfiguration.class)
-@org.springframework.context.annotation.Import(com.erp.core.admin.web.LoginViewController.class)
 @ConditionalOnProperty(name = "erp.security.enabled", matchIfMissing = true)
 @EnableConfigurationProperties(AdminBootstrapProperties.class)
+@Import(LoginViewController.class)
 public class AdminModuleAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(AdminModuleAutoConfiguration.class);
+
+    // ---- Company Web ----
+    @Bean @ConditionalOnMissingBean
+    public CompanyService companyService(CompanyRepository companyRepo, BranchRepository branchRepo) {
+        return new CompanyService(companyRepo, branchRepo);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public CompanyWebController companyWebController(CompanyService companyService) {
+        return new CompanyWebController(companyService);
+    }
 
     // ---- User admin ----
     @Bean @ConditionalOnMissingBean

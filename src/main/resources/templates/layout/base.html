@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(pageTitle, content)">
 <head>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <meta charset="UTF-8">
     <title th:text="${pageTitle}">ErpCore</title>
     <link rel="stylesheet" th:href="@{/assets/style.css}">
     <script th:src="@{/assets/htmx.min.js}"></script>
 </head>
 <body hx-headers='{"X-CSRF-TOKEN": "${_csrf.token}"}'>
-    <!-- টপ বার -->
     <header class="topbar">
         <div class="topbar-left">
             <span class="menu-toggle" id="menuToggle">☰</span>
@@ -20,33 +21,18 @@
     </header>
 
     <div class="app-container">
-        <!-- সাইড বার (মাল্টি-লেভেল ট্রি মেনু) -->
         <aside class="sidebar" id="sidebar">
             <nav class="menu">
                 <ul class="menu-list">
-                    <!-- ড্যাশবোর্ড -->
                     <li class="menu-item">
-                        <a th:href="@{/dashboard}" 
-                           hx-get="/dashboard" 
-                           hx-target="#main-content" 
-                           hx-push-url="true" 
-                           class="menu-link">Dashboard</a>
+                        <a th:href="@{/dashboard}" hx-get="/dashboard" hx-target="#main-content" hx-push-url="true" class="menu-link">Dashboard</a>
                     </li>
 
-                    <!-- মাস্টার কোম্পানি ম্যানেজমেন্ট -->
-                    <li class="menu-item">
-                        <a th:href="@{/admin/companies}" 
-                           hx-get="/admin/companies" 
-                           hx-target="#main-content" 
-                           hx-push-url="true" 
-                           class="menu-link">Master Company Mgmt</a>
-                    </li>
-
-                    <!-- সেটিংস (Dropdown/Tree Menu) -->
-                    <li class="menu-item has-submenu">
+                    <!-- Settings Menu (Master Company এখানে সরানো হয়েছে) -->
+                    <li class="menu-item has-submenu open">
                         <a href="#" class="menu-link toggle-submenu">Settings <span class="arrow">▼</span></a>
-                        <ul class="submenu">
-                            <li><a th:href="@{/admin/settings/company}" hx-get="/admin/settings/company" hx-target="#main-content" hx-push-url="true">Company</a></li>
+                        <ul class="submenu" style="display: block;">
+                            <li><a th:href="@{/admin/settings/companies}" hx-get="/admin/settings/companies" hx-target="#main-content" hx-push-url="true">Company</a></li>
                             <li><a th:href="@{/admin/settings/branch}" hx-get="/admin/settings/branch" hx-target="#main-content" hx-push-url="true">Branch</a></li>
                             <li><a th:href="@{/admin/settings/user}" hx-get="/admin/settings/user" hx-target="#main-content" hx-push-url="true">User</a></li>
                             <li><a th:href="@{/admin/settings/role}" hx-get="/admin/settings/role" hx-target="#main-content" hx-push-url="true">Role</a></li>
@@ -61,9 +47,7 @@
             </nav>
         </aside>
 
-        <!-- মেইন কন্টেন্ট এরিয়া -->
         <main class="main-content" id="main-content">
-            <!-- এখানে ডাইনামিক কন্টেন্ট বসবে -->
             <div th:replace="${content}"></div>
         </main>
     </div>

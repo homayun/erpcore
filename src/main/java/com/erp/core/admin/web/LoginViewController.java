@@ -19,11 +19,7 @@ public class LoginViewController {
         return "dashboard";
     }
 
-    @GetMapping("/admin/companies")
-    public String companies(HttpServletRequest request) {
-        if (request.getHeader("HX-Request") != null) return "admin/companies/index :: content";
-        return "admin/companies/index";
-    }
+    
 
     @GetMapping("/admin/settings/{page}")
     public String settingsPages(@PathVariable String page, HttpServletRequest request) {

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Companies', ~{::#companies-content})}">
+<head><title>Companies</title></head>
+<body>
+    <div th:fragment="content" id="companies-content">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Company Management</h2>
+                <button class="btn" hx-get="/admin/settings/companies/new" hx-target="#modal-container" hx-swap="innerHTML">+ Add Company</button>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Reg. Number</th>
+                        <th>Tax ID</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="company-list">
+                    <tr th:each="c : ${companies}">
+                        <td th:text="${c.name}">ErpCore</td>
+                        <td th:text="${c.registrationNumber}">REG-001</td>
+                        <td th:text="${c.taxId}">TAX-001</td>
+                        <td><span th:if="${c.isActive}" style="color:green;">Active</span></td>
+                        <td>
+                            <button class="btn" style="background:#dc3545;" th:attr="hx-delete='/admin/settings/companies/' + ${c.id}" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="modal-container" style="display: none;" class="modal-backdrop"></div>
+    </div>
+</body>
+</html>

@@ -11,17 +11,31 @@ import java.util.UUID;
 public class CompanyService {
     private final CompanyRepository companyRepo;
     private final BranchRepository branchRepo;
-    public CompanyService(CompanyRepository c, BranchRepository b) { this.companyRepo = c; this.branchRepo = b; }
-
-    @Transactional(readOnly = true)
-    public List<Company> getCompanies(UUID tenantId) { return companyRepo.findByTenantId(tenantId).stream().map(CompanyEntity::toDomain).toList(); }
     
-    @Transactional
-    public void createCompany(UUID tenantId, String name, String regNumber, String taxId) {
-        Company c = new Company(UUID.randomUUID(), tenantId, name, regNumber, taxId, null, null, null, true, Instant.now());
-        companyRepo.save(CompanyEntity.fromDomain(c));
+    public CompanyService(CompanyRepository c, BranchRepository b) { 
+        this.companyRepo = c; 
+        this.branchRepo = b; 
     }
 
     @Transactional(readOnly = true)
-    public List<Branch> getBranches(UUID tenantId) { return branchRepo.findByTenantId(tenantId).stream().map(BranchEntity::toDomain).toList(); }
+    public List<Company> getCompanies(UUID tenantId) { 
+        return companyRepo.findByTenantId(tenantId).stream().map(CompanyEntity::toDomain).toList(); 
+    }
+
+    @Transactional
+    public Company createCompany(UUID tenantId, String name, String regNumber, String taxId) {
+        Company c = new Company(UUID.randomUUID(), tenantId, name, regNumber, taxId, null, null, null, true, Instant.now());
+        companyRepo.save(CompanyEntity.fromDomain(c));
+        return c; // HTMX এ রেন্ডার করার জন্য নতুন কোম্পানিটি রিটার্ন করা হলো
+    }
+
+    @Transactional
+    public void deleteCompany(UUID id) {
+        companyRepo.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Branch> getBranches(UUID tenantId) { 
+        return branchRepo.findByTenantId(tenantId).stream().map(BranchEntity::toDomain).toList(); 
+    }
 }
