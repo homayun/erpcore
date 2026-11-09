@@ -8,7 +8,7 @@
     <link rel="stylesheet" th:href="@{/assets/style.css}">
     <script th:src="@{/assets/htmx.min.js}"></script>
 </head>
-<body hx-headers='{"X-CSRF-TOKEN": "${_csrf.token}"}'>
+<body>
     <header class="topbar">
         <div class="topbar-left">
             <span class="menu-toggle" id="menuToggle">☰</span>
@@ -28,10 +28,10 @@
                         <a th:href="@{/dashboard}" hx-get="/dashboard" hx-target="#main-content" hx-push-url="true" class="menu-link">Dashboard</a>
                     </li>
 
-                    <!-- Settings Menu (Master Company এখানে সরানো হয়েছে) -->
                     <li class="menu-item has-submenu open">
                         <a href="#" class="menu-link toggle-submenu">Settings <span class="arrow">▼</span></a>
                         <ul class="submenu" style="display: block;">
+                            <li><a th:href="@{/admin/settings/master-companies}" hx-get="/admin/settings/master-companies" hx-target="#main-content" hx-push-url="true">Master Company</a></li>
                             <li><a th:href="@{/admin/settings/companies}" hx-get="/admin/settings/companies" hx-target="#main-content" hx-push-url="true">Company</a></li>
                             <li><a th:href="@{/admin/settings/branch}" hx-get="/admin/settings/branch" hx-target="#main-content" hx-push-url="true">Branch</a></li>
                             <li><a th:href="@{/admin/settings/user}" hx-get="/admin/settings/user" hx-target="#main-content" hx-push-url="true">User</a></li>

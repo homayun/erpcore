@@ -28,16 +28,18 @@ public class CompanyWebController {
     }
 
     @GetMapping("/new")
-    public String newCompanyForm() {
+    public String newCompanyForm(Model model) {
+        model.addAttribute("masterCompanies", companyService.getMasterCompanies(tenantId));
         return "admin/settings/companies/form :: form-content";
     }
 
     @PostMapping
-    public String saveCompany(@RequestParam String name, 
+    public String saveCompany(@RequestParam UUID masterCompanyId,
+                              @RequestParam String name, 
                               @RequestParam String regNumber, 
                               @RequestParam(required = false) String taxId, 
                               Model model) {
-        Company company = companyService.createCompany(tenantId, name, regNumber, taxId);
+        Company company = companyService.createCompany(tenantId, masterCompanyId, name, regNumber, taxId);
         model.addAttribute("company", company);
         return "admin/settings/companies/row :: company-row";
     }

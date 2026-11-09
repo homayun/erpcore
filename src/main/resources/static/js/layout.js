@@ -54,7 +54,7 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
         modal.style.display = 'flex';
     }
     // নতুন রো যোগ হলে মডাল বন্ধ হবে
-    if (evt.detail.target.id === 'company-list') {
+    if (evt.detail.target.id === 'company-list' || evt.detail.target.id === 'master-company-list') {
         modal.style.display = 'none';
         modal.innerHTML = '';
     }

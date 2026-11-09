@@ -4,6 +4,15 @@
     <div th:fragment="form-content" class="modal-content">
         <h2>Add New Company</h2>
         <form hx-post="/admin/settings/companies" hx-target="#company-list" hx-swap="beforeend">
+            
+            <div class="form-group">
+                <label>Master Company (Group)</label>
+                <select name="masterCompanyId" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">Select Master Company</option>
+                    <option th:each="mc : ${masterCompanies}" th:value="${mc.id}" th:text="${mc.name}"></option>
+                </select>
+            </div>
+
             <div class="form-group">
                 <label>Company Name</label>
                 <input type="text" name="name" required placeholder="e.g. Acme Corp">

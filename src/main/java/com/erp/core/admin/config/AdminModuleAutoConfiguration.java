@@ -11,9 +11,11 @@ import com.erp.core.admin.application.AdminUserService;
 import com.erp.core.admin.port.AdminRolePort;
 import com.erp.core.admin.web.LoginViewController;
 import com.erp.core.admin.web.CompanyWebController;
+import com.erp.core.admin.web.MasterCompanyWebController;
 import com.erp.core.admin.internal.company.application.CompanyService;
 import com.erp.core.admin.internal.company.adapter.out.jpa.CompanyRepository;
 import com.erp.core.admin.internal.company.adapter.out.jpa.BranchRepository;
+import com.erp.core.admin.internal.company.adapter.out.jpa.MasterCompanyRepository;
 import com.erp.core.admin.web.controller.AdminFieldRuleController;
 import com.erp.core.admin.web.controller.AdminRoleController;
 import com.erp.core.admin.web.controller.AdminUserController;
@@ -49,13 +51,18 @@ public class AdminModuleAutoConfiguration {
 
     // ---- Company Web ----
     @Bean @ConditionalOnMissingBean
-    public CompanyService companyService(CompanyRepository companyRepo, BranchRepository branchRepo) {
-        return new CompanyService(companyRepo, branchRepo);
+    public CompanyService companyService(CompanyRepository companyRepo, BranchRepository branchRepo, MasterCompanyRepository masterRepo) {
+        return new CompanyService(companyRepo, branchRepo, masterRepo);
     }
 
     @Bean @ConditionalOnMissingBean
     public CompanyWebController companyWebController(CompanyService companyService) {
         return new CompanyWebController(companyService);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public MasterCompanyWebController masterCompanyWebController(CompanyService companyService) {
+        return new MasterCompanyWebController(companyService);
     }
 
     // ---- User admin ----

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <tr th:fragment="master-company-row" id="master-company-row">
+        <td th:text="${mc.code}">GRP-002</td>
+        <td th:text="${mc.name}">Bashundhara Group</td>
+        <td><span style="color:green;">Active</span></td>
+        <td>
+            <button class="btn" style="background:#dc3545;" 
+                    th:attr="hx-delete='/admin/settings/master-companies/' + ${mc.id}" 
+                    hx-target="closest tr" 
+                    hx-swap="outerHTML swap:0.5s">Delete</button>
+        </td>
+    </tr>
+    <span th:fragment="empty"></span>
+</body>
+</html>
