@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Branches', ~{::#content})}">
+<head><title>Branches</title></head>
+<body>
+    <div th:fragment="content" id="content">
+        <div class="card">
+            <h2>Branch Management</h2>
+            <div class="toolbar">
+                <div class="filter-group">
+                    <a th:href="@{/admin/settings/branches(filter='all')}" hx-get="/admin/settings/branches?filter=all" hx-target="#content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'all' ? 'active active-all' : ''}">All</a>
+                    <a th:href="@{/admin/settings/branches(filter='active')}" hx-get="/admin/settings/branches?filter=active" hx-target="#content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'active' ? 'active active-active' : ''}">Active</a>
+                    <a th:href="@{/admin/settings/branches(filter='deleted')}" hx-get="/admin/settings/branches?filter=deleted" hx-target="#content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'deleted' ? 'active active-deleted' : ''}">Deleted</a>
+                </div>
+                <div class="actions-group">
+                    <button class="btn btn-primary" hx-get="/admin/settings/branches/new" hx-target="#modal-container" hx-swap="innerHTML">Add Branch</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Branch Name</th><th>Code</th><th>Company ID</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="branch-list">
+                    <th:block th:each="b : ${branches}">
+                        <tr th:replace="~{admin/settings/branches/row :: row}"></tr>
+                    </th:block>
+                </tbody>
+            </table>
+        </div>
+        <div id="modal-container" style="display: none;" class="modal-backdrop"></div>
+    </div>
+</body>
+</html>

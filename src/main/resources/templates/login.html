@@ -2,27 +2,65 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login - ErpCore</title>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f5f5f5; }
-        .login-box { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width: 320px; }
-        h1 { margin-top: 0; color: #333; }
-        input { display: block; width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 10px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; margin-top: 8px; }
-        button:hover { background: #0055aa; }
-        .error { color: red; margin: 8px 0; font-size: 13px; }
-    </style>
+    <title>Sign In - ErpCore</title>
+    <link rel="stylesheet" th:href="@{/assets/style.css}">
 </head>
-<body>
-<div class="login-box">
-    <h1>ErpCore</h1>
-    <p id="error" class="error" style="display:none;"></p>
-    <form id="loginForm">
-        <input type="text" id="username" placeholder="Username or Email" required autofocus>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
+<body class="login-body">
+
+<div class="login-wrapper">
+    <!-- Left Side: Branding -->
+    <div class="login-left">
+        <div class="brand-content">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 20px;">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            <h1>ErpCore</h1>
+            <p>Enterprise Resource Planning System</p>
+            <div class="testimonial">
+                "Streamline your business operations with our modern, secure, and scalable ERP solution."
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Login Form -->
+    <div class="login-right">
+        <div class="login-card">
+            <div class="login-header">
+                <h2>Welcome Back</h2>
+                <p>Please enter your credentials to access the dashboard.</p>
+            </div>
+
+            <div id="error-msg" class="login-error" style="display: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span id="error-text">Invalid username or password</span>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox"> Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Sign In
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
-<script src="/js/login.js" defer></script>
+
+<script th:src="@{/js/login.js}" defer></script>
 </body>
 </html>

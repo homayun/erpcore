@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <tr th:fragment="company-row" id="company-row">
-        <td th:text="${company.name}">Acme Corp</td>
-        <td th:text="${company.registrationNumber}">REG-003</td>
-        <td th:text="${company.taxId}">TAX-003</td>
-        <td><span style="color:green;">Active</span></td>
+    <tr th:fragment="row" th:id="'row-' + ${c.id}">
+        <td style="font-weight:600; color:#4f46e5;" th:text="${c.name}">Company</td>
+        <td th:text="${c.registrationNumber}">Reg</td>
         <td>
-            <button class="btn" style="background:#dc3545;" 
-                    th:attr="hx-delete='/admin/settings/companies/' + ${company.id}" 
-                    hx-target="closest tr" 
-                    hx-swap="outerHTML swap:0.5s">Delete</button>
+            <span th:if="${c.isActive}" class="badge badge-success">Active</span>
+            <span th:unless="${c.isActive}" class="badge badge-danger">Deleted</span>
+        </td>
+        <td style="display: flex; gap: 8px;">
+            <button class="btn-action btn-edit" th:attr="hx-get='/admin/settings/companies/' + ${c.id} + '/edit'" hx-target="#modal-container" hx-swap="innerHTML">Edit</button>
+            <button th:if="${c.isActive}" class="btn-action btn-soft-delete" th:attr="hx-post='/admin/settings/companies/' + ${c.id} + '/soft-delete'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
+            <button th:unless="${c.isActive}" class="btn-action btn-restore" th:attr="hx-post='/admin/settings/companies/' + ${c.id} + '/restore'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
+            <button class="btn-action btn-hard-delete" th:attr="hx-delete='/admin/settings/companies/' + ${c.id}" hx-confirm="Permanently delete?" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>
         </td>
     </tr>
     <span th:fragment="empty"></span>

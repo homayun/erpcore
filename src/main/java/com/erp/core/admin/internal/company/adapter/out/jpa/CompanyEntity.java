@@ -8,50 +8,33 @@ import java.util.UUID;
 @Entity
 @Table(name = "admin_company")
 public class CompanyEntity {
-    @Id 
-    private UUID id;
-    
-    @Column(name = "tenant_id") 
-    private UUID tenantId;
-    
-    @Column(name = "master_company_id")
-    private UUID masterCompanyId;
-    
+    @Id private UUID id;
+    @Column(name = "tenant_id") private UUID tenantId;
+    @Column(name = "master_company_id") private UUID masterCompanyId;
     private String name;
-    
-    @Column(name = "registration_number") 
-    private String registrationNumber;
-    
-    @Column(name = "tax_id") 
-    private String taxId;
-    
-    private String email;
-    private String phone;
-    private String address;
-    
-    @Column(name = "is_active") 
-    private boolean isActive;
-    
-    @Column(name = "created_at") 
-    private Instant createdAt;
+    @Column(name = "registration_number") private String registrationNumber;
+    @Column(name = "tax_id") private String taxId;
+    private String email; private String phone; private String address;
+    @Column(name = "is_active") private boolean isActive;
+    @Column(name = "created_at") private Instant createdAt;
 
     public CompanyEntity() {}
 
     public static CompanyEntity fromDomain(Company d) {
         CompanyEntity e = new CompanyEntity();
-        e.id = d.id();
-        e.tenantId = d.tenantId();
-        e.masterCompanyId = d.masterCompanyId();
-        e.name = d.name();
-        e.registrationNumber = d.registrationNumber();
-        e.taxId = d.taxId();
-        e.email = d.email();
-        e.phone = d.phone();
-        e.address = d.address();
-        e.isActive = d.isActive();
-        e.createdAt = d.createdAt();
+        e.id = d.id(); e.tenantId = d.tenantId(); e.masterCompanyId = d.masterCompanyId();
+        e.name = d.name(); e.registrationNumber = d.registrationNumber(); e.taxId = d.taxId();
+        e.email = d.email(); e.phone = d.phone(); e.address = d.address();
+        e.isActive = d.isActive(); e.createdAt = d.createdAt();
         return e;
     }
+
+    public void update(UUID masterCompanyId, String name, String regNumber, String taxId) {
+        this.masterCompanyId = masterCompanyId; this.name = name; this.registrationNumber = regNumber; this.taxId = taxId;
+    }
+    
+    public void setActive(boolean active) { this.isActive = active; }
+    public boolean isActive() { return isActive; }
 
     public Company toDomain() {
         return new Company(id, tenantId, masterCompanyId, name, registrationNumber, taxId, email, phone, address, isActive, createdAt);

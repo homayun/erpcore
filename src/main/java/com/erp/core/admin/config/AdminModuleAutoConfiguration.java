@@ -12,6 +12,8 @@ import com.erp.core.admin.port.AdminRolePort;
 import com.erp.core.admin.web.LoginViewController;
 import com.erp.core.admin.web.CompanyWebController;
 import com.erp.core.admin.web.MasterCompanyWebController;
+import com.erp.core.admin.web.BranchWebController;
+import com.erp.core.admin.internal.company.application.BranchService;
 import com.erp.core.admin.internal.company.application.CompanyService;
 import com.erp.core.admin.internal.company.application.MasterCompanyService;
 import com.erp.core.admin.internal.company.adapter.out.jpa.CompanyRepository;
@@ -62,6 +64,11 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
+    public BranchService branchService(com.erp.core.admin.internal.company.adapter.out.jpa.BranchRepository branchRepo, CompanyRepository companyRepo) {
+        return new BranchService(branchRepo, companyRepo);
+    }
+
+    @Bean @ConditionalOnMissingBean
     public CompanyWebController companyWebController(CompanyService companyService) {
         return new CompanyWebController(companyService);
     }
@@ -69,6 +76,11 @@ public class AdminModuleAutoConfiguration {
     @Bean @ConditionalOnMissingBean
     public MasterCompanyWebController masterCompanyWebController(MasterCompanyService masterCompanyService) {
         return new MasterCompanyWebController(masterCompanyService);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public BranchWebController branchWebController(BranchService branchService) {
+        return new BranchWebController(branchService);
     }
 
     // ---- User admin ----

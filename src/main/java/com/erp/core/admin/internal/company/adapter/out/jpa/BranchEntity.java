@@ -15,7 +15,9 @@ public class BranchEntity {
     private String phone;
     private boolean isActive;
     private Instant createdAt;
+
     protected BranchEntity() {}
+
     public static BranchEntity fromDomain(Branch b) {
         BranchEntity e = new BranchEntity();
         e.id = b.id(); e.tenantId = b.tenantId(); e.companyId = b.companyId();
@@ -23,5 +25,13 @@ public class BranchEntity {
         e.phone = b.phone(); e.isActive = b.isActive(); e.createdAt = b.createdAt();
         return e;
     }
+
+    public void update(UUID companyId, String name, String code) {
+        this.companyId = companyId; this.name = name; this.branchCode = code;
+    }
+
+    public void setActive(boolean active) { this.isActive = active; }
+    public boolean isActive() { return isActive; }
+
     public Branch toDomain() { return new Branch(id, tenantId, companyId, name, branchCode, address, phone, isActive, createdAt); }
 }

@@ -1,8 +1,10 @@
 package com.erp.core.admin.internal.company.application;
+
 import com.erp.core.admin.internal.company.adapter.out.jpa.*;
 import com.erp.core.admin.internal.company.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -20,25 +22,16 @@ public class CompanyService {
     }
 
     @Transactional(readOnly = true)
-    public List<Company> getCompanies(UUID tenantId) { 
-        return companyRepo.findByTenantId(tenantId).stream().map(CompanyEntity::toDomain).toList(); 
+    public List<Company> getCompanies(UUID tenantId, String filter) {
+        List<CompanyEntity> list = companyRepo.findByTenantId(tenantId);
+        if ("active".equals(filter)) return list.stream().filter(CompanyEntity::isActive).map(CompanyEntity::toDomain).toList();
+        if ("deleted".equals(filter)) return list.stream().filter(e -> !e.isActive()).map(CompanyEntity::toDomain).toList();
+        return list.stream().map(CompanyEntity::toDomain).toList();
     }
 
     @Transactional(readOnly = true)
     public List<MasterCompany> getMasterCompanies(UUID tenantId) {
         return masterRepo.findByTenantId(tenantId).stream().map(MasterCompanyEntity::toDomain).toList();
-    }
-
-    @Transactional
-    public MasterCompany createMasterCompany(UUID tenantId, String name, String code) {
-        MasterCompany mc = new MasterCompany(UUID.randomUUID(), tenantId, name, code, true, Instant.now());
-        masterRepo.save(MasterCompanyEntity.fromDomain(mc));
-        return mc;
-    }
-
-    @Transactional
-    public void deleteMasterCompany(UUID id) {
-        masterRepo.deleteById(id);
     }
 
     @Transactional
@@ -48,13 +41,41 @@ public class CompanyService {
         return c;
     }
 
-    @Transactional
-    public void deleteCompany(UUID id) {
-        companyRepo.deleteById(id);
+    @Transactional(readOnly = true)
+    public Company getById(UUID id) {
+        return companyRepo.findById(id).map(CompanyEntity::toDomain).orElseThrow(() -> new IllegalArgumentException("Not found"));
     }
 
-    @Transactional(readOnly = true)
-    public List<Branch> getBranches(UUID tenantId) { 
-        return branchRepo.findByTenantId(tenantId).stream().map(BranchEntity::toDomain).toList(); 
+    @Transactional
+    public Company updateCompany(UUID id, UUID masterCompanyId, String name, String regNumber, String taxId) {
+        CompanyEntity e = companyRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found"));
+        e.update(masterCompanyId, name, regNumber, taxId);
+        companyRepo.save(e);
+        return e.toDomain();
+    }
+
+    @Transactional
+    public void softDeleteCompany(UUID id) {
+        if (branchRepo.existsByCompanyId(id)) {
+            throw new IllegalStateException("Cannot delete! This company has active Branches.");
+        }
+        CompanyEntity e = companyRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found"));
+        e.setActive(false);
+        companyRepo.save(e);
+    }
+
+    @Transactional
+    public void restoreCompany(UUID id) {
+        CompanyEntity e = companyRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found"));
+        e.setActive(true);
+        companyRepo.save(e);
+    }
+
+    @Transactional
+    public void hardDeleteCompany(UUID id) {
+        if (branchRepo.existsByCompanyId(id)) {
+            throw new IllegalStateException("Cannot permanently delete! This company has Branches.");
+        }
+        companyRepo.deleteById(id);
     }
 }

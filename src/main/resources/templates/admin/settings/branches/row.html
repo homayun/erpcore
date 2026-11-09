@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <tr th:fragment="row" th:id="'row-' + ${b.id}">
+        <td style="font-weight:600; color:#4f46e5;" th:text="${b.name}">Branch</td>
+        <td th:text="${b.branchCode}">Code</td>
+        <td th:text="${b.companyId}">Company ID</td>
+        <td>
+            <span th:if="${b.isActive}" class="badge badge-success">Active</span>
+            <span th:unless="${b.isActive}" class="badge badge-danger">Deleted</span>
+        </td>
+        <td style="display: flex; gap: 8px;">
+            <button class="btn-action btn-edit" th:attr="hx-get='/admin/settings/branches/' + ${b.id} + '/edit'" hx-target="#modal-container" hx-swap="innerHTML">Edit</button>
+            <button th:if="${b.isActive}" class="btn-action btn-soft-delete" th:attr="hx-post='/admin/settings/branches/' + ${b.id} + '/soft-delete'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Soft Delete</button>
+            <button th:unless="${b.isActive}" class="btn-action btn-restore" th:attr="hx-post='/admin/settings/branches/' + ${b.id} + '/restore'" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Restore</button>
+            <button class="btn-action btn-hard-delete" th:attr="hx-delete='/admin/settings/branches/' + ${b.id}" hx-confirm="Permanently delete?" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>
+        </td>
+    </tr>
+    <span th:fragment="empty"></span>
+</body>
+</html>

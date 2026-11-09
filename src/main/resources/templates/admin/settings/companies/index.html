@@ -1,34 +1,28 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Companies', ~{::#companies-content})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('Companies', ~{::#content})}">
 <head><title>Companies</title></head>
 <body>
-    <div th:fragment="content" id="companies-content">
+    <div th:fragment="content" id="content">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Company Management</h2>
-                <button class="btn" hx-get="/admin/settings/companies/new" hx-target="#modal-container" hx-swap="innerHTML">+ Add Company</button>
+            <h2>Company Management</h2>
+            <div class="toolbar">
+                <div class="filter-group">
+                    <a th:href="@{/admin/settings/companies(filter='all')}" hx-get="/admin/settings/companies?filter=all" hx-target="#content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'all' ? 'active active-all' : ''}">All</a>
+                    <a th:href="@{/admin/settings/companies(filter='active')}" hx-get="/admin/settings/companies?filter=active" hx-target="#content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'active' ? 'active active-active' : ''}">Active</a>
+                    <a th:href="@{/admin/settings/companies(filter='deleted')}" hx-get="/admin/settings/companies?filter=deleted" hx-target="#content" hx-push-url="true" class="filter-btn" th:classappend="${filter == 'deleted' ? 'active active-deleted' : ''}">Deleted</a>
+                </div>
+                <div class="actions-group">
+                    <button class="btn btn-primary" hx-get="/admin/settings/companies/new" hx-target="#modal-container" hx-swap="innerHTML">Add Company</button>
+                </div>
             </div>
-            
             <table>
                 <thead>
-                    <tr>
-                        <th>Company Name</th>
-                        <th>Reg. Number</th>
-                        <th>Tax ID</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
+                    <tr><th>Company Name</th><th>Reg. No</th><th>Status</th><th>Actions</th></tr>
                 </thead>
                 <tbody id="company-list">
-                    <tr th:each="c : ${companies}">
-                        <td th:text="${c.name}">ErpCore</td>
-                        <td th:text="${c.registrationNumber}">REG-001</td>
-                        <td th:text="${c.taxId}">TAX-001</td>
-                        <td><span th:if="${c.isActive}" style="color:green;">Active</span></td>
-                        <td>
-                            <button class="btn" style="background:#dc3545;" th:attr="hx-delete='/admin/settings/companies/' + ${c.id}" hx-target="closest tr" hx-swap="outerHTML swap:0.5s">Delete</button>
-                        </td>
-                    </tr>
+                    <th:block th:each="c : ${companies}">
+                        <tr th:replace="~{admin/settings/companies/row :: row}"></tr>
+                    </th:block>
                 </tbody>
             </table>
         </div>
