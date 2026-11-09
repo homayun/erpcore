@@ -1,38 +1,15 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: html}">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard - ErpCore</title>
-    <style>
-        body { font-family: sans-serif; margin: 0; background: #f5f5f5; }
-        .header { background: #0066cc; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { margin: 0; font-size: 1.3rem; }
-        .header button { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        .header button:hover { background: #c82333; }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1rem; }
-        .card h2 { margin-top: 0; color: #333; }
-    </style>
+    <title>Dashboard</title>
 </head>
 <body>
-<div class="header">
-    <h1>ErpCore Dashboard</h1>
-    <button id="logoutBtn">Logout</button>
-</div>
-<div class="container">
-    <div class="card">
-        <h2>Welcome!</h2>
-        <p>You are successfully logged in. This is your admin dashboard.</p>
+    <!-- এই div-এর ভেতরের কন্টেন্ট base.html এর #main-content এ বসবে -->
+    <div th:fragment="content">
+        <h2>Welcome to ERP Dashboard!</h2>
+        <div class="card">
+            <p>Select a menu item from the left sidebar to get started.</p>
+        </div>
     </div>
-    <div class="card">
-        <h2>Admin Functions</h2>
-        <ul>
-            <li><a href="/admin/users">Manage Users</a></li>
-            <li><a href="/admin/roles">Manage Roles</a></li>
-            <li><a href="/admin/field-rules">Field Rules</a></li>
-        </ul>
-    </div>
-</div>
-<script src="/js/dashboard.js" defer></script>
 </body>
 </html>

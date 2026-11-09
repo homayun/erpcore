@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle} ?: 'ErpCore'">ErpCore</title>
+    <link rel="stylesheet" th:href="@{/assets/style.css}">
+    <script th:src="@{/assets/htmx.min.js}"></script>
+</head>
+<body>
+    <!-- টপ বার -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="menu-toggle" id="menuToggle">☰</span>
+            <h2>ErpCore ERP</h2>
+        </div>
+        <div class="topbar-right">
+            <span>Welcome, Admin</span>
+            <button id="logoutBtn" class="btn-logout">Logout</button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- সাইড বার (মাল্টি-লেভেল ট্রি মেনু) -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="menu">
+                <ul class="menu-list">
+                    <!-- ড্যাশবোর্ড -->
+                    <li class="menu-item">
+                        <a th:href="@{/dashboard}" 
+                           hx-get="/dashboard" 
+                           hx-target="#main-content" 
+                           hx-push-url="true" 
+                           class="menu-link">Dashboard</a>
+                    </li>
+
+                    <!-- মাস্টার কোম্পানি ম্যানেজমেন্ট -->
+                    <li class="menu-item">
+                        <a th:href="@{/admin/companies}" 
+                           hx-get="/admin/companies" 
+                           hx-target="#main-content" 
+                           hx-push-url="true" 
+                           class="menu-link">Master Company Mgmt</a>
+                    </li>
+
+                    <!-- সেটিংস (Dropdown/Tree Menu) -->
+                    <li class="menu-item has-submenu">
+                        <a href="#" class="menu-link toggle-submenu">Settings <span class="arrow">▼</span></a>
+                        <ul class="submenu">
+                            <li><a th:href="@{/admin/settings/company}" hx-get="/admin/settings/company" hx-target="#main-content" hx-push-url="true">Company</a></li>
+                            <li><a th:href="@{/admin/settings/branch}" hx-get="/admin/settings/branch" hx-target="#main-content" hx-push-url="true">Branch</a></li>
+                            <li><a th:href="@{/admin/settings/user}" hx-get="/admin/settings/user" hx-target="#main-content" hx-push-url="true">User</a></li>
+                            <li><a th:href="@{/admin/settings/role}" hx-get="/admin/settings/role" hx-target="#main-content" hx-push-url="true">Role</a></li>
+                            <li><a th:href="@{/admin/settings/permission}" hx-get="/admin/settings/permission" hx-target="#main-content" hx-push-url="true">Permission</a></li>
+                            <li><a th:href="@{/admin/settings/user-permission}" hx-get="/admin/settings/user-permission" hx-target="#main-content" hx-push-url="true">User Permission</a></li>
+                            <li><a th:href="@{/admin/settings/user-role}" hx-get="/admin/settings/user-role" hx-target="#main-content" hx-push-url="true">User Role</a></li>
+                            <li><a th:href="@{/admin/settings/role-permission}" hx-get="/admin/settings/role-permission" hx-target="#main-content" hx-push-url="true">Role Permission</a></li>
+                            <li><a th:href="@{/admin/settings/code-setting}" hx-get="/admin/settings/code-setting" hx-target="#main-content" hx-push-url="true">Code Setting</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- মেইন কন্টেন্ট এরিয়া (HTMX এখানে লোড হবে) -->
+        <main class="main-content" id="main-content">
+            <!-- ডিফল্টভাবে পেজের কন্টেন্ট এখানে th:insert এর মাধ্যমে আসবে -->
+            <div th:insert="${content}"></div>
+        </main>
+    </div>
+
+    <!-- এক্সটার্নাল জেএস (CSP এর জন্য নিরাপদ) -->
+    <script th:src="@{/js/layout.js}"></script>
+</body>
+</html>

@@ -13,14 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-
-import java.util.LinkedHashMap;
 
 public class BrowserSecurityFilterChainConfiguration {
 
@@ -34,11 +29,15 @@ public class BrowserSecurityFilterChainConfiguration {
 
         AuthenticationManager authManager = new ProviderManager(provider);
 
+        // Spring Security 7 compatible custom entry point
         // API-র জন্য JSON 401, ব্রাউজারের জন্য /login রিডাইরেক্ট
-        LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints = new LinkedHashMap<>();
-        entryPoints.put(new AntPathRequestMatcher("/api/**"), jsonEntryPoint);
-        DelegatingAuthenticationEntryPoint entryPoint = new DelegatingAuthenticationEntryPoint(entryPoints);
-        entryPoint.setDefaultEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
+        AuthenticationEntryPoint entryPoint = (request, response, authException) -> {
+            if (request.getRequestURI().startsWith("/api/")) {
+                jsonEntryPoint.commence(request, response, authException);
+            } else {
+                new LoginUrlAuthenticationEntryPoint("/login").commence(request, response, authException);
+            }
+        };
 
         http
                 .securityMatcher("/**")
@@ -49,15 +48,14 @@ public class BrowserSecurityFilterChainConfiguration {
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation(fix -> fix.changeSessionId()))
                 .authorizeHttpRequests(auth -> auth
-                        // শুধু পাবলিক রিসোর্স এবং লগইন এন্ডপয়েন্ট permitAll
                         .requestMatchers(
                                 "/login",
                                 "/auth/refresh",
                                 "/csrf",
-                                "/css/**", "/js/**", "/images/**",
+                                "/css/**", "/js/**", "/images/**", 
+                                "/assets/**", /* এই লাইনটি যোগ করা হলো HTMX এবং CSS এর জন্য */
                                 "/actuator/health", "/actuator/info"
                         ).permitAll()
-                        // বাকি সব (ড্যাশবোর্ড, অ্যাডমিন, সেটিংস) এর জন্য লগইন বাধ্যতামূলক
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
@@ -68,7 +66,7 @@ public class BrowserSecurityFilterChainConfiguration {
                         .deleteCookies("JSESSIONID")
                         .logoutSuccessHandler(logoutHandler))
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(entryPoint) // নতুন EntryPoint
+                        .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(deniedHandler))
                 .addFilterBefore(rateLimitFilter, CsrfFilter.class)
                 .addFilterAfter(new TenantContextRestorationFilter(),

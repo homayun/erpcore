@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- th:fragment ব্যবহার করে শুধু এই ডিভটুকু কন্ট্রোলার থেকে রিটার্ন করা হবে -->
+    <div th:fragment="form-content" class="modal-content" onclick="event.stopPropagation()">
+        <h2>Add New Company</h2>
+        <!-- HTMX: ফর্ম সাবমিট হলে POST যাবে, রেসপন্স আসলে মডাল বন্ধ হবে -->
+        <form hx-post="/admin/companies" 
+              hx-target="#company-list" 
+              hx-swap="beforeend"
+              onsubmit="document.getElementById('modal-container').style.display='none'">
+            
+            <div class="form-group">
+                <label>Company Code</label>
+                <input type="text" name="code" required placeholder="e.g. CMP-003">
+            </div>
+            <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" name="name" required placeholder="e.g. Acme Corp">
+            </div>
+            
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <button type="button" class="btn" style="background:#666;" onclick="document.getElementById('modal-container').style.display='none'">Cancel</button>
+                <button type="submit" class="btn">Save Company</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
