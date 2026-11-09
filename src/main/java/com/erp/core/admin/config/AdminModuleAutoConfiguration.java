@@ -13,6 +13,7 @@ import com.erp.core.admin.web.LoginViewController;
 import com.erp.core.admin.web.CompanyWebController;
 import com.erp.core.admin.web.MasterCompanyWebController;
 import com.erp.core.admin.internal.company.application.CompanyService;
+import com.erp.core.admin.internal.company.application.MasterCompanyService;
 import com.erp.core.admin.internal.company.adapter.out.jpa.CompanyRepository;
 import com.erp.core.admin.internal.company.adapter.out.jpa.BranchRepository;
 import com.erp.core.admin.internal.company.adapter.out.jpa.MasterCompanyRepository;
@@ -49,10 +50,15 @@ public class AdminModuleAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(AdminModuleAutoConfiguration.class);
 
-    // ---- Company Web ----
+    // ---- Company Web & Services ----
     @Bean @ConditionalOnMissingBean
     public CompanyService companyService(CompanyRepository companyRepo, BranchRepository branchRepo, MasterCompanyRepository masterRepo) {
         return new CompanyService(companyRepo, branchRepo, masterRepo);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public MasterCompanyService masterCompanyService(MasterCompanyRepository masterRepo, CompanyRepository companyRepo) {
+        return new MasterCompanyService(masterRepo, companyRepo);
     }
 
     @Bean @ConditionalOnMissingBean
@@ -61,8 +67,8 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
-    public MasterCompanyWebController masterCompanyWebController(CompanyService companyService) {
-        return new MasterCompanyWebController(companyService);
+    public MasterCompanyWebController masterCompanyWebController(MasterCompanyService masterCompanyService) {
+        return new MasterCompanyWebController(masterCompanyService);
     }
 
     // ---- User admin ----

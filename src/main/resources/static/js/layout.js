@@ -59,3 +59,11 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
         modal.innerHTML = '';
     }
 });
+// HTMX Error Handling
+document.body.addEventListener('htmx:responseError', function(evt) {
+    if (evt.detail.xhr.status === 400) {
+        alert("Cannot delete: " + evt.detail.xhr.responseText);
+    } else {
+        alert("Server Error: " + evt.detail.xhr.status);
+    }
+});

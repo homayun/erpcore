@@ -21,6 +21,19 @@ public class MasterCompanyEntity {
         e.id = d.id(); e.tenantId = d.tenantId(); e.name = d.name(); e.code = d.code(); e.isActive = d.isActive(); e.createdAt = d.createdAt();
         return e;
     }
+    
+    public void update(String name, String code) {
+        this.name = name;
+        this.code = code;
+    }
+    
+    public void setActive(boolean active) {
+        this.isActive = active;
+    }
+
+    public boolean isActive() { return isActive; }
+    public UUID getId() { return id; }
+
     public MasterCompany toDomain() {
         return new MasterCompany(id, tenantId, name, code, isActive, createdAt);
     }

@@ -4,4 +4,5 @@ import java.util.List;
 import java.util.UUID;
 public interface CompanyRepository extends JpaRepository<CompanyEntity, UUID> {
     List<CompanyEntity> findByTenantId(UUID tenantId);
+    boolean existsByMasterCompanyId(UUID masterCompanyId);
 }
