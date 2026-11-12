@@ -2,6 +2,8 @@ package com.erp.core.admin.web;
 
 import com.erp.core.admin.internal.company.application.MasterCompanyService;
 import com.erp.core.admin.internal.company.domain.MasterCompany;
+import com.erp.core.security.api.actor.CurrentActor;
+import com.erp.core.security.api.actor.CurrentActorProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -19,15 +21,28 @@ import java.util.UUID;
 public class MasterCompanyWebController {
 
     private final MasterCompanyService service;
-    private final UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private final CurrentActorProvider actorProvider;
 
-    public MasterCompanyWebController(MasterCompanyService service) {
+    public MasterCompanyWebController(MasterCompanyService service, CurrentActorProvider actorProvider) {
         this.service = service;
+        this.actorProvider = actorProvider;
+    }
+
+    /**
+     * Resolves the caller's active tenant from the authenticated actor.
+     * Fails closed: anonymous or tenant-less actors MUST NOT reach data.
+     */
+    private UUID tenantId() {
+        CurrentActor a = actorProvider.getCurrentActor();
+        if (a == null || !a.isAuthenticated() || a.tenantId() == null) {
+            throw new IllegalStateException("No authenticated tenant context");
+        }
+        return a.tenantId();
     }
 
     @GetMapping
     public String list(HttpServletRequest request, Model model, @RequestParam(defaultValue = "all") String filter) {
-        model.addAttribute("masterCompanies", service.getAll(tenantId, filter));
+        model.addAttribute("masterCompanies", service.getAll(tenantId(), filter));
         model.addAttribute("filter", filter);
         if (request.getHeader("HX-Request") != null) return "admin/settings/master-companies/index :: content";
         return "admin/settings/master-companies/index";
@@ -46,7 +61,7 @@ public class MasterCompanyWebController {
 
     @PostMapping
     public String create(@RequestParam String name, @RequestParam String code, Model model) {
-        MasterCompany mc = service.create(tenantId, name, code);
+        MasterCompany mc = service.create(tenantId(), name, code);
         model.addAttribute("mc", mc);
         return "admin/settings/master-companies/row :: row";
     }
@@ -82,18 +97,17 @@ public class MasterCompanyWebController {
     public void export(HttpServletResponse response) throws IOException {
         response.setContentType("text/csv");
         response.setHeader("Content-Disposition", "attachment; filename=master_companies.csv");
-        service.exportCsv(tenantId, response.getWriter());
+        service.exportCsv(tenantId(), response.getWriter());
     }
 
     @PostMapping("/import")
     public String importCsv(@RequestParam("file") MultipartFile file, HttpServletRequest request, Model model) {
-        service.importCsv(tenantId, file);
-        model.addAttribute("masterCompanies", service.getAll(tenantId, "all"));
+        service.importCsv(tenantId(), file);
+        model.addAttribute("masterCompanies", service.getAll(tenantId(), "all"));
         model.addAttribute("filter", "all");
         return "admin/settings/master-companies/index :: content";
     }
 
-    // এটি HTMX-কে 400 Bad Request পাঠাবে, যাতে layout.js এর alert কাজ করে
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> handleIllegalState(IllegalStateException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());

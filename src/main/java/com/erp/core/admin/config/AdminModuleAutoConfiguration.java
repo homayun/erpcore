@@ -87,8 +87,9 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
-    public MasterCompanyWebController masterCompanyWebController(MasterCompanyService masterCompanyService) {
-        return new MasterCompanyWebController(masterCompanyService);
+    public MasterCompanyWebController masterCompanyWebController(MasterCompanyService masterCompanyService,
+                                                              CurrentActorProvider actorProvider) {
+        return new MasterCompanyWebController(masterCompanyService, actorProvider);
     }
 
     @Bean @ConditionalOnMissingBean
@@ -107,8 +108,9 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
-    public CodeSettingWebController codeSettingWebController(CodeSettingService service) {
-        return new CodeSettingWebController(service);
+    public CodeSettingWebController codeSettingWebController(CodeSettingService service,
+                                                        CurrentActorProvider actorProvider) {
+        return new CodeSettingWebController(service, actorProvider);
     }
 
     // ==================================================
