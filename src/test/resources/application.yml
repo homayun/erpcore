@@ -1,6 +1,18 @@
 # =====================================================================
 # Test-only defaults — NOT used by production build
 # =====================================================================
+# Explicit overrides ensure test contexts do NOT depend on main config
+# parsing. Any change to main application.yml cannot accidentally weaken
+# test-time security or leak lazy-loading behavior.
+
+spring:
+  jpa:
+    open-in-view: false
+  data:
+    redis:
+      repositories:
+        enabled: false
+
 erp:
   security:
     jwt:

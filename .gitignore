@@ -28,3 +28,45 @@ phase-*.ps1
 *.bak
 *.orig
 *.rej
+
+# ---- Build ----
+target/
+*.class
+*.jar
+*.war
+
+# ---- IDE ----
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---- Logs ----
+*.log
+logs/
+test-output.log
+full-test.log
+
+# ---- Backups (NEVER commit) ----
+*.bak
+*.bak2
+*.old
+*.orig
+*.rej
+
+# ---- Local overrides ----
+application-local.yml
+application-local.yaml
+.env
+.env.local
+
+# ---- Security audit artifacts ----
+**/surefire-reports/
+target/surefire-reports/
