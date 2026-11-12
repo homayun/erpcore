@@ -2,7 +2,10 @@ package com.erp.core.admin.web;
 
 import com.erp.core.admin.internal.company.application.CompanyService;
 import com.erp.core.admin.internal.company.domain.Company;
+import com.erp.core.security.api.actor.CurrentActor;
+import com.erp.core.security.api.actor.CurrentActorProvider;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,13 +18,33 @@ import java.util.UUID;
 @RequestMapping("/admin/settings/companies")
 public class CompanyWebController {
     private final CompanyService service;
-    private final UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private final CurrentActorProvider actorProvider;
 
-    public CompanyWebController(CompanyService service) { this.service = service; }
+    public CompanyWebController(CompanyService service, CurrentActorProvider actorProvider) {
+        this.service = service;
+        this.actorProvider = actorProvider;
+    }
+
+    private UUID tenantId() {
+        CurrentActor a = actorProvider.getCurrentActor();
+        if (a == null || a.tenantId() == null) throw new IllegalStateException("No tenant context");
+        return a.tenantId();
+    }
+
+    private static UUID activeDivisionId(HttpServletRequest request) {
+        HttpSession s = request.getSession(false);
+        if (s == null) return null;
+        Object v = s.getAttribute(DivisionSwitchController.DIVISION_ATTR);
+        return v instanceof UUID u ? u : null;
+    }
 
     @GetMapping
     public String list(HttpServletRequest request, Model model, @RequestParam(defaultValue = "all") String filter) {
-        model.addAttribute("companies", service.getCompanies(tenantId, filter));
+        UUID div = activeDivisionId(request);
+        var companies = div != null
+                ? service.getCompaniesByDivision(tenantId(), div, filter)
+                : service.getCompanies(tenantId(), filter);
+        model.addAttribute("companies", companies);
         model.addAttribute("filter", filter);
         if (request.getHeader("HX-Request") != null) return "admin/settings/companies/index :: content";
         return "admin/settings/companies/index";
@@ -29,42 +52,46 @@ public class CompanyWebController {
 
     @GetMapping("/new")
     public String newForm(Model model) {
-        model.addAttribute("masterCompanies", service.getMasterCompanies(tenantId));
+        model.addAttribute("masterCompanies", service.getMasterCompanies(tenantId()));
         return "admin/settings/companies/form :: form-content";
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable UUID id, Model model) {
         model.addAttribute("company", service.getById(id));
-        model.addAttribute("masterCompanies", service.getMasterCompanies(tenantId));
+        model.addAttribute("masterCompanies", service.getMasterCompanies(tenantId()));
         return "admin/settings/companies/form :: form-content";
     }
 
     @PostMapping
-    public String create(@RequestParam UUID masterCompanyId, @RequestParam String name, @RequestParam String regNumber, @RequestParam(required = false) String taxId, Model model) {
-        Company c = service.createCompany(tenantId, masterCompanyId, name, regNumber, taxId);
-        model.addAttribute("company", c);
+    public String create(@RequestParam UUID masterCompanyId, @RequestParam String name,
+                         @RequestParam String regNumber, @RequestParam(required = false) String taxId,
+                         Model model) {
+        Company c = service.createCompany(tenantId(), masterCompanyId, name, regNumber, taxId);
+        model.addAttribute("c", c);
         return "admin/settings/companies/row :: row";
     }
 
     @PostMapping("/{id}")
-    public String update(@PathVariable UUID id, @RequestParam UUID masterCompanyId, @RequestParam String name, @RequestParam String regNumber, @RequestParam(required = false) String taxId, Model model) {
+    public String update(@PathVariable UUID id, @RequestParam UUID masterCompanyId, @RequestParam String name,
+                         @RequestParam String regNumber, @RequestParam(required = false) String taxId,
+                         Model model) {
         Company c = service.updateCompany(id, masterCompanyId, name, regNumber, taxId);
-        model.addAttribute("company", c);
+        model.addAttribute("c", c);
         return "admin/settings/companies/row :: row";
     }
 
     @PostMapping("/{id}/soft-delete")
     public String softDelete(@PathVariable UUID id, Model model) {
         service.softDeleteCompany(id);
-        model.addAttribute("company", service.getById(id));
+        model.addAttribute("c", service.getById(id));
         return "admin/settings/companies/row :: row";
     }
 
     @PostMapping("/{id}/restore")
     public String restore(@PathVariable UUID id, Model model) {
         service.restoreCompany(id);
-        model.addAttribute("company", service.getById(id));
+        model.addAttribute("c", service.getById(id));
         return "admin/settings/companies/row :: row";
     }
 

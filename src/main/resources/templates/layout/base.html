@@ -1,102 +1,103 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(pageTitle, content)">
+<html xmlns:th="http://www.thymeleaf.org" lang="en"
+      th:fragment="layout(pageTitle, content)">
 <head>
-    <meta name="_csrf" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <meta charset="UTF-8">
-    <title th:text="${pageTitle}">ErpCore</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+
+    <!-- CSRF meta for JS-driven requests (login, logout, HTMX) -->
+    <meta name="_csrf"        th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+    <!-- HTMX config hardening: no inline <script> tags processed on swap. -->
+    <meta name="htmx-config" content='{"allowScriptTags":false,"selfRequestsOnly":true}'>
+    <!-- (allowEval=false is NOT set: existing templates use hx-on: handlers.) -->
+
+    <title th:text="${pageTitle} ?: 'ErpCore'">ErpCore</title>
+    <link rel="icon" href="data:,">       <!-- suppress favicon 404 noise -->
     <link rel="stylesheet" th:href="@{/assets/style.css}">
-    <script th:src="@{/assets/htmx.min.js}"></script>
+    <script th:src="@{/assets/htmx.min.js}" defer></script>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- Skip navigation for keyboard/screen-reader users -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ==================== SIDEBAR ==================== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">ErpCore</div>
-        <nav class="menu">
+        <nav class="menu" aria-label="Main navigation">
             <ul class="menu-list">
                 <li class="menu-item">
-                    <a th:href="@{/dashboard}" hx-get="/dashboard" hx-target="#main-content" hx-push-url="true" class="menu-link">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <a th:href="@{/dashboard}" hx-get="/dashboard"
+                       hx-target="#main-content" hx-push-url="true"
+                       class="menu-link">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         Dashboard
                     </a>
                 </li>
 
-                <!-- Settings Menu (class="open" নেই) -->
                 <li class="menu-item has-submenu">
-                    <a href="#" class="menu-link toggle-submenu">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        Settings <span class="arrow">▼</span>
-                    </a>
-                    <!-- submenu (class="active" যোগ হবে JS দিয়ে) -->
-                    <ul class="submenu">
-                        <li><a th:href="@{/admin/settings/master-companies}" hx-get="/admin/settings/master-companies" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                            Master Company
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/companies}" hx-get="/admin/settings/companies" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>
-                            Company
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/branches}" hx-get="/admin/settings/branches" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>
-                            Branch
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/users}" hx-get="/admin/settings/users" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            User
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/roles}" hx-get="/admin/settings/roles" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            Role
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/permissions}" hx-get="/admin/settings/permissions" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            Permission
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/user-permission}" hx-get="/admin/settings/user-permission" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
-                            User Permission
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/user-role}" hx-get="/admin/settings/user-role" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                            User Role
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/role-permission}" hx-get="/admin/settings/role-permission" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-                            Role Permission
-                        </a></li>
-                        <li><a th:href="@{/admin/settings/code-settings}" hx-get="/admin/settings/code-settings" hx-target="#main-content" hx-push-url="true">
-                            <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                            Code Setting
-                        </a></li>
+                    <button type="button" class="menu-link toggle-submenu"
+                            aria-expanded="false" aria-controls="settings-submenu">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        Settings <span class="arrow" aria-hidden="true">▼</span>
+                    </button>
+                    <ul class="submenu" id="settings-submenu">
+                        <li><a th:href="@{/admin/settings/master-companies}" hx-get="/admin/settings/master-companies" hx-target="#main-content" hx-push-url="true">Master Company</a></li>
+                        <li><a th:href="@{/admin/settings/companies}" hx-get="/admin/settings/companies" hx-target="#main-content" hx-push-url="true">Company</a></li>
+                        <li><a th:href="@{/admin/settings/branches}" hx-get="/admin/settings/branches" hx-target="#main-content" hx-push-url="true">Branch</a></li>
+                        <li><a th:href="@{/admin/settings/users}" hx-get="/admin/settings/users" hx-target="#main-content" hx-push-url="true">User</a></li>
+                        <li><a th:href="@{/admin/settings/roles}" hx-get="/admin/settings/roles" hx-target="#main-content" hx-push-url="true">Role</a></li>
+                        <li><a th:href="@{/admin/settings/permissions}" hx-get="/admin/settings/permissions" hx-target="#main-content" hx-push-url="true">Permission</a></li>
+                        <li><a th:href="@{/admin/settings/user-permission}" hx-get="/admin/settings/user-permission" hx-target="#main-content" hx-push-url="true">User Permission</a></li>
+                        <li><a th:href="@{/admin/settings/user-role}" hx-get="/admin/settings/user-role" hx-target="#main-content" hx-push-url="true">User Role</a></li>
+                        <li><a th:href="@{/admin/settings/role-permission}" hx-get="/admin/settings/role-permission" hx-target="#main-content" hx-push-url="true">Role Permission</a></li>
+                        <li><a th:href="@{/admin/settings/code-settings}" hx-get="/admin/settings/code-settings" hx-target="#main-content" hx-push-url="true">Code Setting</a></li>
                     </ul>
                 </li>
             </ul>
         </nav>
     </aside>
 
-    <!-- Topbar -->
+    <!-- ==================== TOPBAR ==================== -->
     <header class="topbar">
         <div class="topbar-left">
             <h2 th:text="${pageTitle}">Dashboard</h2>
         </div>
         <div class="topbar-right">
+
+            <!-- Division switcher: ONE form, no duplicate id. -->
+            <form th:if="${hasMultipleDivisions}" class="division-switcher"
+                  th:attr="aria-label='Filter by division'">
+                <select id="divisionSelect" onchange="switchDivision(this.value)"
+                        aria-label="Filter by division">
+                    <option value="">All Divisions</option>
+                    <option th:each="d : ${availableDivisions}"
+                            th:value="${d.id}"
+                            th:text="${d.name}"
+                            th:selected="${d.id == activeDivisionId}"></option>
+                </select>
+            </form>
+
+            <!-- Profile dropdown: hover + keyboard + click (JS handles focus) -->
             <div class="dropdown">
-                <div class="user-profile">
-                    <div class="avatar">A</div>
+                <button type="button" class="user-profile" aria-haspopup="true"
+                        aria-expanded="false" aria-controls="profile-menu">
+                    <div class="avatar" aria-hidden="true">A</div>
                     <div class="user-info">
                         <span class="user-name">Admin</span>
                         <span class="user-role">Administrator</span>
                     </div>
-                    <span class="dropdown-icon">▼</span>
-                </div>
-                <div class="dropdown-menu">
-                    <a href="#">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span class="dropdown-icon" aria-hidden="true">▼</span>
+                </button>
+                <div class="dropdown-menu" id="profile-menu" role="menu">
+                    <a href="#" role="menuitem">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         My Profile
                     </a>
-                    <a href="#" id="logoutBtn" class="danger">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <a href="#" id="logoutBtn" class="danger" role="menuitem">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                         Logout
                     </a>
                 </div>
@@ -104,10 +105,10 @@
         </div>
     </header>
 
-    <main class="main-content" id="main-content">
+    <main class="main-content" id="main-content" tabindex="-1">
         <div th:replace="${content}"></div>
     </main>
 
-    <script th:src="@{/js/layout.js}"></script>
+    <script th:src="@{/js/layout.js}" defer></script>
 </body>
 </html>

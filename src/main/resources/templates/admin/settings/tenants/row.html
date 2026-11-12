@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <tr th:fragment="row" th:id="'tenant-row-' + ${t.id}">
+        <td class="code-cell" th:text="${t.code}">CODE</td>
+        <td style="font-weight:600; color:#4f46e5;" th:text="${t.name}">Name</td>
+        <td th:text="${t.subscriptionPlan} ?: '—'">PLAN</td>
+        <td>
+            <span th:if="${t.status == 'ACTIVE'}" class="badge badge-success">Active</span>
+            <span th:if="${t.status == 'SUSPENDED'}" class="badge badge-danger">Suspended</span>
+            <span th:if="${t.status == 'ARCHIVED'}" class="badge" style="background:#f1f5f9; color:#64748b;">Archived</span>
+        </td>
+        <td th:text="${#temporals.format(t.createdAt, 'yyyy-MM-dd HH:mm')}">2026-01-01</td>
+        <td style="display: flex; gap: 8px;">
+            <button th:if="${t.status == 'ACTIVE'}"
+                    class="btn-action btn-soft-delete"
+                    th:attr="hx-post='/admin/settings/tenants/' + ${t.id} + '/suspend'"
+                    hx-target="#content" hx-swap="outerHTML">Suspend</button>
+            <button th:if="${t.status == 'SUSPENDED'}"
+                    class="btn-action btn-restore"
+                    th:attr="hx-post='/admin/settings/tenants/' + ${t.id} + '/activate'"
+                    hx-target="#content" hx-swap="outerHTML">Activate</button>
+        </td>
+    </tr>
+    <span th:fragment="empty"></span>
+</body>
+</html>

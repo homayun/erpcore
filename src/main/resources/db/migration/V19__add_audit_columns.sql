@@ -1,0 +1,1 @@
+-- V19 no-op: audit columns already in Path A migrations.

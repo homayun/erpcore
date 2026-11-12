@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Tenants', ~{::#content})}">
+<head><title>Tenants</title></head>
+<body>
+    <div th:fragment="content" id="content">
+        <div class="card">
+            <h2>Tenant Management</h2>
+            <div class="toolbar">
+                <div class="filter-group"></div>
+                <div class="actions-group">
+                    <button class="btn btn-primary"
+                            hx-get="/admin/settings/tenants/new"
+                            hx-target="#modal-container"
+                            hx-swap="innerHTML">+ Create Tenant</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Plan</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tenant-list">
+                    <th:block th:each="t : ${tenants}">
+                        <tr th:replace="~{admin/settings/tenants/row :: row}"></tr>
+                    </th:block>
+                </tbody>
+            </table>
+        </div>
+        <div id="modal-container" style="display: none;" class="modal-backdrop"></div>
+    </div>
+</body>
+</html>

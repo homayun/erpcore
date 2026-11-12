@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,6 +34,7 @@ class SecurityFilterChainIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired CredentialRepositoryPort credentialRepository;
     @Autowired PasswordHashingPort passwordHasher;
+    @Autowired JdbcTemplate jdbcTemplate;
 
     private final UUID tenantId = UUID.randomUUID();
     private final UUID actorId = UUID.randomUUID();
@@ -40,8 +42,28 @@ class SecurityFilterChainIntegrationTest {
 
     @BeforeEach
     void seedUser() {
+        ensureTenantExists(tenantId);
         credentialRepository.save(new Credential(actorId, tenantId, "alice",
                 passwordHasher.hash(PASSWORD)));
+    }
+    /**
+     * V17 FK {@code fk_credentials_tenant} requires {@code sec_credentials.tenant_id}
+     * to reference an existing {@code sec_tenant.id}. Tests use a random tenant
+     * per test method, so seed a matching tenant row idempotently.
+     *
+     * The insert is portable across H2 and PostgreSQL (INSERT ... SELECT ... WHERE NOT EXISTS).
+     * Code is derived from the full tenant UUID to guarantee uniqueness.
+     */
+    private void ensureTenantExists(UUID tenantId) {
+        jdbcTemplate.update(
+                "INSERT INTO sec_tenant (id, code, name, status, created_at) " +
+                "SELECT ?, ?, ?, ?, CURRENT_TIMESTAMP " +
+                "WHERE NOT EXISTS (SELECT 1 FROM sec_tenant WHERE id = ?)",
+                tenantId,
+                "TEST_" + tenantId.toString().toUpperCase(),
+                "Test Tenant",
+                "ACTIVE",
+                tenantId);
     }
 
     @Test

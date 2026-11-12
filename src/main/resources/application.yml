@@ -1,13 +1,12 @@
 # =====================================================================
-# ErpCore Security Module - Application Configuration
+# ErpCore Security Module — base configuration (dev/test profile)
 # =====================================================================
-# Standalone reference config for dev/test.
-# Override via environment variables or host application's config.
+# Production overrides live in application-prod.yml.
 #
-# Production checklist (MUST be honored before deployment):
-#   - JWT_SECRET         : set to a random 32+ byte value
-#   - REDIS_PASSWORD     : set if Redis requires authentication
-#   - spring.datasource  : replace H2 with PostgreSQL
+# SECRETS: NEVER hardcode here. Use environment variables.
+#   JWT_SECRET                        → set to 32+ random bytes
+#   ERP_ADMIN_BOOTSTRAP_PASSWORD      → dev only, never prod
+#   REDIS_PASSWORD                    → if Redis requires auth
 # =====================================================================
 
 spring:
@@ -20,7 +19,7 @@ spring:
     password: ""
     driver-class-name: org.h2.Driver
 
-  # Flyway owns the schema
+  # Flyway owns the schema. Hibernate only validates — never mutates.
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -29,7 +28,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate            # ← was 'update' — silent schema drift
     show-sql: false
     open-in-view: false
     properties:
@@ -48,6 +47,14 @@ spring:
       repositories:
         enabled: false
 
+server:
+  # Dev-only: allow fall-through to default error handling.
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+    include-exception: false
+
 erp:
   security:
     enabled: true
@@ -58,9 +65,13 @@ erp:
 
     jwt:
       issuer: erp-core
-      secret: ${JWT_SECRET:}   # leave empty in dev with erp.security.jwt.allow-insecure-default-secret=true
+      secret: ${JWT_SECRET:change-me-change-me-change-me-32-chars}
+      # The line above *intentionally* uses the placeholder so JwtSecretGuard
+      # detects it. In dev, set the flag below. In prod, ALWAYS set JWT_SECRET
+      # and NEVER set the flag.
       access-ttl: PT15M
       clock-skew: PT30S
+      allow-insecure-default-secret: true     # DEV ONLY — prod must not set this
 
     refresh-token:
       ttl: P30D
@@ -75,13 +86,12 @@ erp:
 
     cleanup:
       enabled: true
-      cron: "0 0 3 * * *"      # daily at 03:00 server time
-      retention: P7D           # keep revoked tokens 7 days for reuse detection
+      cron: "0 0 3 * * *"
+      retention: P7D
 
     admin:
       bootstrap:
-         enabled: true
-         Fill these in to seed a first admin user on startup:
-         tenant-id: 11111111-1111-1111-1111-111111111111
-         username: admin
-         password: AdminPassword1!
+        enabled: ${ERP_ADMIN_BOOTSTRAP_ENABLED:false}
+        tenant-id: ${ERP_ADMIN_BOOTSTRAP_TENANT_ID:}
+        username: ${ERP_ADMIN_BOOTSTRAP_USERNAME:}
+        password: ${ERP_ADMIN_BOOTSTRAP_PASSWORD:}

@@ -1,6 +1,7 @@
 package com.erp.core.security.internal.web.config;
 
 import com.erp.core.security.internal.context.infrastructure.springsecurity.TenantContextRestorationFilter;
+import com.erp.core.security.internal.tenant.port.TenantMembershipPort;
 import com.erp.core.security.internal.web.handler.JsonAccessDeniedHandler;
 import com.erp.core.security.internal.web.handler.JsonAuthenticationEntryPoint;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,28 +12,13 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * Stateless JWT chain covering:
- *   /api/**             — business data
- *   /admin/users        — REST admin endpoints
- *   /admin/roles        — REST admin endpoints
- *   /admin/field-rules  — REST admin endpoints
- *   /admin/demo/**      — REST admin demo endpoints
- *
- * SECURITY IMPROVEMENT: These endpoints are STATELESS and JWT-protected.
- * A browser session cookie alone CANNOT access them. CSRF is disabled
- * because there is no session to protect. This prevents session-fixation
- * and CSRF-based lateral attacks against admin APIs.
- *
- * NOTE: /admin/settings/** (UI pages) is intentionally EXCLUDED — those
- * use the browser session-based chain with CSRF protection.
- */
 public class ApiSecurityFilterChainConfiguration {
 
     public static SecurityFilterChain build(HttpSecurity http,
                                             JsonAuthenticationEntryPoint entryPoint,
                                             JsonAccessDeniedHandler deniedHandler,
-                                            JwtDecoder jwtDecoder) throws Exception {
+                                            JwtDecoder jwtDecoder,
+                                            TenantMembershipPort membership) throws Exception {
 
         JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
         authorities.setAuthoritiesClaimName("authorities");
@@ -68,7 +54,7 @@ public class ApiSecurityFilterChainConfiguration {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(deniedHandler))
-                .addFilterAfter(new TenantContextRestorationFilter(),
+                .addFilterAfter(new TenantContextRestorationFilter(membership),
                         BearerTokenAuthenticationFilter.class);
 
         SecurityHeadersConfiguration.apply(http);

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout('Role Permissions', ~{::#content})}">
+<body>
+    <div id="content">
+        <h2 style="margin-bottom: 20px;">Role Permissions Management</h2>
+        <div class="card">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Role Name</th>
+                        <th>Assigned Permissions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="role : ${roles}">
+                        <td th:text="${role.name}" style="font-weight: bold; color: #818cf8;"></td>
+                        <td>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <form th:each="perm : ${allPermissions}"
+                                      th:attr="hx-post=${'/admin/settings/roles/' + role.id + '/toggle-permission'}"
+                                      hx-trigger="change"
+                                      hx-swap="none"
+                                      style="display: inline-flex; align-items: center; gap: 6px; background: #0f172a; padding: 5px 10px; border-radius: 4px;">
+                                    <input type="hidden" name="permissionKey" th:value="${perm}">
+                                    <input type="checkbox" name="grant" value="true"
+                                           th:checked="${role.permissionKeys.contains(perm)}">
+                                    <span th:text="${perm}" style="font-size: 0.85rem;"></span>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

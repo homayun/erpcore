@@ -30,7 +30,6 @@ public class SpringSecurityActorBridge implements CurrentActorProvider {
             return ANONYMOUS;
         }
 
-        // JWT callers (/api/**): identity comes from validated claims.
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
             Jwt jwt = jwtAuth.getToken();
             UUID actorId = extractUuid(jwt.getClaimAsString("actor_id"));
@@ -49,12 +48,13 @@ public class SpringSecurityActorBridge implements CurrentActorProvider {
             Set<String> authorities = user.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toUnmodifiableSet());
+            // ACTIVE tenant: session override (validated by filter) or primary.
+            UUID activeTenantId = TenantContextHolder.current().orElse(user.tenantId());
             return new CurrentActor(
-                    user.actorId(), ActorType.USER, user.tenantId(),
+                    user.actorId(), ActorType.USER, activeTenantId,
                     user.getUsername(), authorities);
         }
 
-        // Fallback for tests using plain UsernamePasswordAuthenticationToken
         UUID actorId = extractUuid(principal);
         if (actorId == null) {
             return ANONYMOUS;

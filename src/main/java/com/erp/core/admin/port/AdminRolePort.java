@@ -1,14 +1,11 @@
 package com.erp.core.admin.port;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 public interface AdminRolePort {
-
-    record RoleView(UUID id, UUID tenantId, String name, int hierarchyLevel,
-                    Set<String> permissionKeys, boolean isActive) {}
+    record RoleView(UUID id, UUID tenantId, String name, int hierarchyLevel, Set<String> permissionKeys, boolean isActive) {}
 
     UUID ensureRole(UUID tenantId, String name, int hierarchyLevel);
     UUID createRole(UUID tenantId, String name, int hierarchyLevel);
@@ -17,11 +14,8 @@ public interface AdminRolePort {
     void ensureAssignment(UUID actorId, UUID roleId, UUID tenantId);
     void assignRole(UUID actorId, UUID roleId, UUID tenantId);
     List<RoleView> listRoles(UUID tenantId);
-
     void updateRole(UUID roleId, String newName, int hierarchyLevel);
     void deleteRole(UUID roleId);
-
-    // NEW: bulk permission assignment for RBAC management UI
-    Set<String> getAssignedPermissions(UUID roleId);
-    void replacePermissions(UUID roleId, Collection<String> permissionKeys);
+    void replacePermissions(UUID roleId, List<String> permissions);
+    Set<String> getPermissionsForRole(UUID roleId);
 }

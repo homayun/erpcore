@@ -14,7 +14,15 @@
     --topbar-height: 64px;
 }
 
-body { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg-body); overflow: hidden; color: var(--text-main); }
+html, body { height: 100%; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg-body);
+    color: var(--text-main);
+    /* overflow: hidden moved to the app-layout scope only, so login page can scroll. */
+}
 * { box-sizing: border-box; }
 
 /* --- TOPBAR --- */
@@ -42,7 +50,9 @@ body { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; background: var(
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 8px; min-width: 180px; 
     z-index: 105; border: 1px solid #e2e8f0; padding: 8px 0;
 }
-.dropdown:hover .dropdown-menu { display: block; } /* মাউস ওপরে রাখলেই মেনু থাকবে */
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu,
+.dropdown.open .dropdown-menu { display: block; }
 .dropdown-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #475569; text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.2s; }
 .dropdown-menu a:hover { background: #f8fafc; color: #4f46e5; }
 .dropdown-menu a.danger:hover { background: #fef2f2; color: #dc2626; }
@@ -66,7 +76,17 @@ body { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; background: var(
 .submenu li a svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
 /* --- MAIN CONTENT --- */
-.main-content { margin-left: var(--sidebar-width); margin-top: var(--topbar-height); height: calc(100vh - var(--topbar-height)); padding: 24px 32px; overflow-y: auto; }
+.main-content {
+    margin-left: var(--sidebar-width);
+    margin-top: var(--topbar-height);
+    height: calc(100vh - var(--topbar-height));
+    padding: 24px 32px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* Lock body scroll ONLY when the layout (sidebar + topbar) is present. */
+body:has(.sidebar) { overflow: hidden; }
 
 /* --- CARDS & TABLES --- */
 .card { background: var(--bg-surface); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
@@ -111,12 +131,13 @@ tbody tr:hover { background: #f8fafc; }
 /* =========================================
    MODERN LOGIN PAGE
    ========================================= */
-.login-body {
-    background: #ffffff !important;
-    display: block !important;
-    height: auto !important;
-    overflow: auto !important;
-}
+   .login-body {
+       background: #ffffff;
+       /* Reset any inherited layout constraints. */
+       display: block;
+       height: auto;
+       overflow: auto;
+   }
 
 .login-wrapper {
     display: flex;
@@ -380,4 +401,158 @@ tbody tr:hover { background: #f8fafc; }
     height: 16px;
     cursor: pointer;
     margin: 0;
+}
+
+/* =========================================================
+   Accessibility fixes (WCAG 2.1 AA)
+   ========================================================= */
+
+/* Visible focus for keyboard users — required by WCAG 2.4.7. */
+:focus { outline: none; }
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Contrast fix: muted text should be >= 4.5:1 on white */
+/* --text-muted: #64748b;   ALREADY correct */
+
+/* Reduced motion: respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    .login-left::before { animation: none; }   /* stop rotating bg */
+}
+
+/* Skip link */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 8px;
+    background: var(--primary);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    z-index: 10000;
+    font-weight: 600;
+    text-decoration: none;
+}
+.skip-link:focus {
+    left: 8px;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Change <a href="#" class="menu-link toggle-submenu"> is now <button> */
+button.toggle-submenu {
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+button.toggle-submenu:focus-visible {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Profile dropdown is now a button — reset button styling */
+button.user-profile {
+    background: transparent;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    color: inherit;
+}
+
+/* =========================================================
+   Responsive: sidebar collapses < 900px
+   ========================================================= */
+@media (max-width: 900px) {
+    :root { --sidebar-width: 72px; }
+    .sidebar-header { font-size: 0; }                /* hide text, keep height */
+    .sidebar-header::after { content: 'E'; font-size: 20px; }
+    .menu-link span:not(.arrow) { display: none; }    /* hide label text */
+    .submenu { display: none !important; }            /* disable nested menu on narrow */
+    .main-content { padding: 16px; }
+    .topbar { padding: 0 12px; }
+}
+
+@media (max-width: 600px) {
+    :root { --sidebar-width: 0px; }
+    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+    .sidebar.open { transform: translateX(0); }
+    .topbar { left: 0; }
+    .main-content { margin-left: 0; padding: 12px; }
+}
+
+
+/* =========================================================
+   LOGIN — Icon fields, password toggle, caps warning, honeypot
+   ========================================================= */
+.input-wrapper { position: relative; display: flex; align-items: center; }
+
+.input-wrapper .input-icon {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8; display: flex; align-items: center;
+    pointer-events: none; z-index: 1; transition: color 0.15s;
+}
+.input-wrapper:focus-within .input-icon { color: #4f46e5; }
+
+.login-card .input-wrapper input[type="text"],
+.login-card .input-wrapper input[type="password"] {
+    padding-left: 42px; padding-right: 44px; width: 100%;
+}
+.login-card .input-wrapper input[type="text"] { padding-right: 16px; }
+
+.password-toggle {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    background: transparent; border: none; padding: 8px; cursor: pointer;
+    color: #64748b; border-radius: 6px; display: flex; align-items: center;
+    justify-content: center; transition: background 0.15s, color 0.15s; z-index: 2;
+}
+.password-toggle:hover { background: #f1f5f9; color: #1e293b; }
+.password-toggle:focus-visible { outline: 2px solid #4f46e5; outline-offset: 1px; }
+
+.caps-warning {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 6px; font-size: 12px; font-weight: 500; color: #d97706;
+}
+
+.hp-field {
+    position: absolute; left: -9999px; top: auto;
+    width: 1px; height: 1px; overflow: hidden;
+}
+
+.login-btn { position: relative; }
+.login-btn.loading { pointer-events: none; opacity: 0.85; }
+.login-btn.loading .login-btn-label,
+.login-btn.loading .login-btn-arrow { visibility: hidden; }
+.login-btn-spinner {
+    display: none; position: absolute; left: 50%; top: 50%;
+    width: 16px; height: 16px; margin-left: -8px; margin-top: -8px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: #ffffff;
+    border-radius: 50%; animation: login-spin 0.7s linear infinite;
+}
+.login-btn.loading .login-btn-spinner { display: inline-block; }
+@keyframes login-spin { to { transform: rotate(360deg); } }
+
+.login-footer-note {
+    margin: 24px 0 0 0; text-align: center;
+    font-size: 11.5px; color: #64748b;
 }

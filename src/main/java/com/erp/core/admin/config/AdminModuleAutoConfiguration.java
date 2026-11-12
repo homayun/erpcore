@@ -81,8 +81,9 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
-    public CompanyWebController companyWebController(CompanyService companyService) {
-        return new CompanyWebController(companyService);
+    public CompanyWebController companyWebController(CompanyService companyService,
+                                                         CurrentActorProvider actorProvider) {
+        return new CompanyWebController(companyService, actorProvider);
     }
 
     @Bean @ConditionalOnMissingBean
@@ -91,8 +92,9 @@ public class AdminModuleAutoConfiguration {
     }
 
     @Bean @ConditionalOnMissingBean
-    public BranchWebController branchWebController(BranchService branchService) {
-        return new BranchWebController(branchService);
+    public BranchWebController branchWebController(BranchService branchService,
+                                                       CurrentActorProvider actorProvider) {
+        return new BranchWebController(branchService, actorProvider);
     }
 
     // ==================================================
@@ -133,8 +135,9 @@ public class AdminModuleAutoConfiguration {
                                              PasswordPolicy policy,
                                              SpringDataAdminRoleRepository roleRepo,
                                              SpringDataRoleAssignmentRepository roleAssignmentRepo,
-                                             com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataUserPermissionRepository userPermRepo) {
-        return new AdminUserService(repo, hasher, policy, roleRepo, roleAssignmentRepo, userPermRepo);
+                                             com.erp.core.security.internal.authorization.adapter.out.jpa.SpringDataUserPermissionRepository userPermRepo,
+                                             com.erp.core.security.internal.tenant.port.TenantMembershipPort membership) {
+        return new AdminUserService(repo, hasher, policy, roleRepo, roleAssignmentRepo, userPermRepo, membership);
     }
 
     @Bean @ConditionalOnMissingBean
@@ -144,8 +147,9 @@ public class AdminModuleAutoConfiguration {
 
     @Bean @ConditionalOnMissingBean
     public UserWebController userWebController(AdminUserService service,
-                                                PermissionRepositoryPort permissionRepo) {
-        return new UserWebController(service, permissionRepo);
+                                                PermissionRepositoryPort permissionRepo,
+                                                CurrentActorProvider actorProvider) {
+        return new UserWebController(service, permissionRepo, actorProvider);
     }
 
     // ==================================================
@@ -166,25 +170,45 @@ public class AdminModuleAutoConfiguration {
         }
         log.warn("AdminRolePort: JPA repos missing -> noop fallback");
         return new AdminRolePort() {
-            @Override public UUID ensureRole(UUID t, String n, int h) { return UUID.randomUUID(); }
-            @Override public UUID createRole(UUID t, String n, int h) {
-                throw new IllegalStateException("Admin role management requires JPA persistence");
+            @Override public UUID ensureRole(UUID tenantId, String name, int hierarchyLevel) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
             }
-            @Override public void grantPermission(UUID r, String p) {}
-            @Override public void revokePermission(UUID r, String p) {}
-            @Override public void ensureAssignment(UUID a, UUID r, UUID t) {}
-            @Override public void assignRole(UUID a, UUID r, UUID t) {}
-            @Override public List<RoleView> listRoles(UUID t) { return List.of(); }
-            @Override public void updateRole(UUID r, String n, int h) {}
-            @Override public void deleteRole(UUID r) {}
-            @Override public Set<String> getAssignedPermissions(UUID r) { return Set.of(); }
-            @Override public void replacePermissions(UUID r, Collection<String> keys) {}
+            @Override public UUID createRole(UUID tenantId, String name, int hierarchyLevel) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public void grantPermission(UUID roleId, String permissionKey) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public void revokePermission(UUID roleId, String permissionKey) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public void ensureAssignment(UUID actorId, UUID roleId, UUID tenantId) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public void assignRole(UUID actorId, UUID roleId, UUID tenantId) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public List<RoleView> listRoles(UUID tenantId) {
+                return java.util.Collections.emptyList();
+            }
+            @Override public void updateRole(UUID roleId, String newName, int hierarchyLevel) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public void deleteRole(UUID roleId) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public void replacePermissions(UUID roleId, java.util.List<String> permissions) {
+                throw new UnsupportedOperationException("No AdminRolePort adapter configured");
+            }
+            @Override public java.util.Set<String> getPermissionsForRole(UUID roleId) {
+                return java.util.Collections.emptySet();
+            }
         };
     }
 
     @Bean @ConditionalOnMissingBean
-    public AdminRoleService adminRoleService(AdminRolePort port) {
-        return new AdminRoleService(port);
+    public AdminRoleService adminRoleService(AdminRolePort port, PermissionRepositoryPort permissionRepo) {
+        return new AdminRoleService(port, permissionRepo);
     }
 
     @Bean @ConditionalOnMissingBean
@@ -195,8 +219,9 @@ public class AdminModuleAutoConfiguration {
     @Bean @ConditionalOnMissingBean
     public RoleWebController roleWebController(AdminRoleService service,
                                                 SpringDataAdminRoleRepository roleRepo,
-                                                PermissionRepositoryPort permissionRepo) {
-        return new RoleWebController(service, roleRepo, permissionRepo);
+                                                PermissionRepositoryPort permissionRepo,
+                                                CurrentActorProvider actorProvider) {
+        return new RoleWebController(service, roleRepo, permissionRepo, actorProvider);
     }
 
     // ==================================================
@@ -226,13 +251,63 @@ public class AdminModuleAutoConfiguration {
     // Bootstrap
     // ==================================================
 
+    // ==================================================
+    // Tenant management
+    // ==================================================
+
     @Bean @ConditionalOnMissingBean
+    public com.erp.core.admin.tenant.application.TenantService tenantService(
+            com.erp.core.admin.tenant.adapter.out.jpa.SpringDataTenantRepository tenantRepo,
+            com.erp.core.security.internal.tenant.port.TenantMembershipPort membership,
+            CredentialRepositoryPort credentialRepo,
+            PasswordHashingPort hasher,
+            PasswordPolicy policy,
+            SpringDataAdminRoleRepository roleRepo,
+            SpringDataRolePermissionRepository rolePermissionRepo,
+            SpringDataRoleAssignmentRepository roleAssignmentRepo) {
+        return new com.erp.core.admin.tenant.application.TenantService(
+                tenantRepo, membership, credentialRepo, hasher, policy,
+                roleRepo, rolePermissionRepo, roleAssignmentRepo);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public com.erp.core.admin.web.TenantWebController tenantWebController(
+            com.erp.core.admin.tenant.application.TenantService service,
+            CurrentActorProvider actorProvider) {
+        return new com.erp.core.admin.web.TenantWebController(service, actorProvider);
+    }
+
+    // ==================================================
+    // Bootstrap
+    // ==================================================
+
+
+
+    // ==================================================
+    // Division filter (MasterCompany-centric UI)
+    // ==================================================
+
+    @Bean @ConditionalOnMissingBean
+    public com.erp.core.admin.web.DivisionSwitchController divisionSwitchController(
+            CurrentActorProvider actorProvider,
+            MasterCompanyRepository masterCompanyRepo) {
+        return new com.erp.core.admin.web.DivisionSwitchController(actorProvider, masterCompanyRepo);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public com.erp.core.admin.web.DivisionModelAdvice divisionModelAdvice(
+            CurrentActorProvider actorProvider,
+            MasterCompanyRepository masterCompanyRepo) {
+        return new com.erp.core.admin.web.DivisionModelAdvice(actorProvider, masterCompanyRepo);
+    }
+@Bean @ConditionalOnMissingBean
     public AdminBootstrapRunner adminBootstrapRunner(AdminBootstrapProperties props,
                                                      CredentialRepositoryPort credentialRepo,
                                                      PasswordHashingPort hasher,
                                                      PasswordPolicy policy,
                                                      PermissionRepositoryPort permissionRepo,
-                                                     AdminRolePort rolePort) {
-        return new AdminBootstrapRunner(props, credentialRepo, hasher, policy, permissionRepo, rolePort);
+                                                     AdminRolePort rolePort,
+                                                     com.erp.core.security.internal.tenant.port.TenantMembershipPort membership) {
+        return new AdminBootstrapRunner(props, credentialRepo, hasher, policy, permissionRepo, rolePort, membership);
     }
 }

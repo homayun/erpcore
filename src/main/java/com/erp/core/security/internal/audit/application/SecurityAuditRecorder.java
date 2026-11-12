@@ -3,6 +3,7 @@ package com.erp.core.security.internal.audit.application;
 import com.erp.core.security.api.audit.SecurityAuditEvent;
 import com.erp.core.security.api.audit.SecurityAuditPort;
 import com.erp.core.security.api.audit.SecurityAuditSeverity;
+import com.erp.core.security.internal.tenant.event.TenantSwitchedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -11,15 +12,8 @@ import org.springframework.security.authentication.event.AuthenticationSuccessEv
 import org.springframework.security.authentication.event.LogoutSuccessEvent;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Bridges Spring Security authentication events to ErpCore's audit contract.
- *
- * NEVER logs passwords, tokens, or hashes. Only event type + principal +
- * timestamp.
- */
 public class SecurityAuditRecorder {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityAuditRecorder.class);
@@ -50,9 +44,14 @@ public class SecurityAuditRecorder {
                 event.getAuthentication() != null ? event.getAuthentication().getName() : "anonymous");
     }
 
+    @EventListener
+    public void onTenantSwitch(TenantSwitchedEvent event) {
+        emit("TENANT_SWITCH", event.actorId(), event.toTenant(), SecurityAuditSeverity.INFO,
+                event.fromTenant() + "->" + event.toTenant());
+    }
+
     private void emit(String action, UUID actorId, UUID tenantId,
                       SecurityAuditSeverity severity, String detail) {
-        // Audit detail is action-scoped; never include secrets.
         SecurityAuditEvent auditEvent = new SecurityAuditEvent(
                 UUID.randomUUID(), actorId, tenantId,
                 action + ":" + detail, severity, clock.instant());

@@ -15,15 +15,23 @@ public class CompanyService {
     private final BranchRepository branchRepo;
     private final MasterCompanyRepository masterRepo;
 
-    public CompanyService(CompanyRepository c, BranchRepository b, MasterCompanyRepository m) { 
-        this.companyRepo = c; 
+    public CompanyService(CompanyRepository c, BranchRepository b, MasterCompanyRepository m) {
+        this.companyRepo = c;
         this.branchRepo = b;
         this.masterRepo = m;
     }
 
     @Transactional(readOnly = true)
     public List<Company> getCompanies(UUID tenantId, String filter) {
-        List<CompanyEntity> list = companyRepo.findByTenantId(tenantId);
+        return applyFilter(companyRepo.findByTenantId(tenantId), filter);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Company> getCompaniesByDivision(UUID tenantId, UUID divisionId, String filter) {
+        return applyFilter(companyRepo.findByTenantIdAndMasterCompanyId(tenantId, divisionId), filter);
+    }
+
+    private List<Company> applyFilter(List<CompanyEntity> list, String filter) {
         if ("active".equals(filter)) return list.stream().filter(CompanyEntity::isActive).map(CompanyEntity::toDomain).toList();
         if ("deleted".equals(filter)) return list.stream().filter(e -> !e.isActive()).map(CompanyEntity::toDomain).toList();
         return list.stream().map(CompanyEntity::toDomain).toList();
@@ -36,6 +44,7 @@ public class CompanyService {
 
     @Transactional
     public Company createCompany(UUID tenantId, UUID masterCompanyId, String name, String regNumber, String taxId) {
+        if (masterCompanyId == null) throw new IllegalArgumentException("masterCompanyId is required");
         Company c = new Company(UUID.randomUUID(), tenantId, masterCompanyId, name, regNumber, taxId, null, null, null, true, Instant.now());
         companyRepo.save(CompanyEntity.fromDomain(c));
         return c;
@@ -48,6 +57,7 @@ public class CompanyService {
 
     @Transactional
     public Company updateCompany(UUID id, UUID masterCompanyId, String name, String regNumber, String taxId) {
+        if (masterCompanyId == null) throw new IllegalArgumentException("masterCompanyId is required");
         CompanyEntity e = companyRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found"));
         e.update(masterCompanyId, name, regNumber, taxId);
         companyRepo.save(e);

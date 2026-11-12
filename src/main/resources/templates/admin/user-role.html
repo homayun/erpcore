@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout('User Roles', ~{::#content})}">
+<body>
+    <div id="content">
+        <h2 style="margin-bottom: 20px;">User Roles Management</h2>
+        <div class="card">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Assign Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.username}" style="font-weight: bold;"></td>
+                        <td>
+                            <form th:attr="hx-post=${'/admin/settings/users/' + user.actorId + '/assign-role'}"
+                                  hx-swap="none"
+                                  style="display: flex; gap: 10px;">
+                                <select name="roleId" class="form-control" style="width: 200px;" required>
+                                    <option value="">Select Role...</option>
+                                    <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}"></option>
+                                </select>
+                                <button type="submit" class="btn btn-primary">Assign</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

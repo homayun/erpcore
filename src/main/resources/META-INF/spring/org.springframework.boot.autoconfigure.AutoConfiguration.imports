@@ -1,2 +1,15 @@
+# =====================================================================
+# ErpCore — Spring Boot AutoConfiguration manifest
+# =====================================================================
+# Each line is a fully-qualified class name of a @AutoConfiguration class.
+# Ordering is controlled by each class's `before`/`after` attributes;
+# line order in this file is advisory only.
+#
+# SECURITY:
+# - This file contains ONLY class identifiers. No secrets, no paths,
+#   no credentials, no tenant UUIDs. Secrets belong in environment vars.
+# - Removing a line disables that module's beans (deny-by-default).
+# =====================================================================
+
 com.erp.core.security.internal.platform.config.SecurityModuleAutoConfiguration
 com.erp.core.admin.config.AdminModuleAutoConfiguration

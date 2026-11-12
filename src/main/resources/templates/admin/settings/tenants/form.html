@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="form-content" class="modal-content">
+        <h2>Create Tenant</h2>
+        <form hx-post="/admin/settings/tenants"
+              hx-target="#content"
+              hx-swap="outerHTML">
+
+            <div class="form-group">
+                <label>Tenant Code</label>
+                <input type="text" name="code" required
+                       placeholder="JAMUNA" pattern="[A-Z][A-Z0-9_]{1,49}"
+                       title="UPPERCASE, 2-50 chars">
+            </div>
+            <div class="form-group">
+                <label>Tenant Name</label>
+                <input type="text" name="name" required placeholder="Jamuna Group">
+            </div>
+            <div class="form-group">
+                <label>Subscription Plan (optional)</label>
+                <input type="text" name="subscriptionPlan" placeholder="STANDARD / ENTERPRISE">
+            </div>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
+                <strong>Optional:</strong> Create a bootstrap admin user for this tenant.
+                You (the creator) are added as a member regardless.
+            </p>
+
+            <div class="form-group">
+                <label>Initial Admin Username (optional)</label>
+                <input type="text" name="initialAdminUsername" placeholder="e.g. jamuna-admin">
+            </div>
+            <div class="form-group">
+                <label>Initial Admin Password (optional)</label>
+                <input type="password" name="initialAdminPassword"
+                       placeholder="Min 12 chars with upper/lower/digit/special">
+            </div>
+
+            <div style="text-align: right; margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn close-modal"
+                        style="background:#f1f5f9; color:#475569;">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Tenant</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

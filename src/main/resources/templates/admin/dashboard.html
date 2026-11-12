@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout}">
-    <div th:fragment="content">
-        <h1 class="mb-4" style="margin-bottom: 20px;">Welcome to the Dashboard</h1>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout('Dashboard', ~{::#content})}">
+<body>
+    <div id="content">
+        <h1 style="margin-bottom: 20px;">Welcome to the Dashboard</h1>
         <div class="card">
             <h3>Quick Stats</h3>
             <p>Here you will see your ERP metrics.</p>
         </div>
     </div>
+</body>
 </html>

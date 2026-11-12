@@ -68,6 +68,12 @@ import com.erp.core.security.internal.web.controller.RefreshController;
 import com.erp.core.security.internal.web.handler.JsonAccessDeniedHandler;
 import com.erp.core.security.internal.web.handler.JsonAuthenticationEntryPoint;
 import com.erp.core.security.internal.web.handler.JsonLogoutSuccessHandler;
+import com.erp.core.security.internal.tenant.port.TenantMembershipPort;
+import com.erp.core.security.internal.tenant.adapter.out.jpa.JpaTenantMembershipAdapter;
+import com.erp.core.security.internal.tenant.adapter.out.jpa.SpringDataTenantMembershipRepository;
+import com.erp.core.security.internal.tenant.adapter.out.memory.InMemoryTenantMembershipAdapter;
+import com.erp.core.security.internal.web.controller.TenantSwitchController;
+import com.erp.core.security.internal.web.advice.TenantModelAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -279,9 +285,7 @@ public class SecurityModuleAutoConfiguration {
     // =================================================================
 
     @Bean @ConditionalOnMissingBean
-    public ErpAuthenticationProvider erpAuthenticationProvider(AuthenticationOrchestrator o) {
-        return new ErpAuthenticationProvider(o);
-    }
+    public ErpAuthenticationProvider erpAuthenticationProvider(AuthenticationOrchestrator o, RoleRepositoryPort roleRepo) { return new ErpAuthenticationProvider(o, roleRepo); }
     @Bean @ConditionalOnMissingBean
     public SecurityContextRepository securityContextRepository() { return new HttpSessionSecurityContextRepository(); }
     @Bean @ConditionalOnMissingBean
@@ -442,8 +446,9 @@ public class SecurityModuleAutoConfiguration {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http,
                                                       JsonAuthenticationEntryPoint ep,
                                                       JsonAccessDeniedHandler dh,
-                                                      JwtDecoder jd) throws Exception {
-        return ApiSecurityFilterChainConfiguration.build(http, ep, dh, jd);
+                                                      JwtDecoder jd,
+                                                      TenantMembershipPort membership) throws Exception {
+        return ApiSecurityFilterChainConfiguration.build(http, ep, dh, jd, membership);
     }
 
     @Bean @Order(2) @ConditionalOnMissingBean(name = "browserSecurityFilterChain")
@@ -454,8 +459,9 @@ public class SecurityModuleAutoConfiguration {
                                                           JsonAuthenticationEntryPoint ep,
                                                           JsonAccessDeniedHandler dh,
                                                           JsonLogoutSuccessHandler lh,
-                                                          LoginRateLimitFilter rlf) throws Exception {
-        return BrowserSecurityFilterChainConfiguration.build(http, p, pr, ep, dh, lh, rlf);
+                                                          LoginRateLimitFilter rlf,
+                                                          TenantMembershipPort membership) throws Exception {
+        return BrowserSecurityFilterChainConfiguration.build(http, p, pr, ep, dh, lh, rlf, membership);
     }
 
     // =================================================================
@@ -470,8 +476,9 @@ public class SecurityModuleAutoConfiguration {
     }
     @Bean @ConditionalOnProperty(name = "erp.security.enabled", matchIfMissing = true)
     public RefreshController refreshController(RefreshTokenService rs, JwtTokenIssuer ji,
-                                               SecurityProperties p, CredentialStatusPort csp) {
-        return new RefreshController(rs, ji, p, csp);
+                                               SecurityProperties p, CredentialStatusPort csp,
+                                               RoleRepositoryPort roleRepository) {
+        return new RefreshController(rs, ji, p, csp, roleRepository);
     }
     @Bean @ConditionalOnProperty(name = "erp.security.enabled", matchIfMissing = true)
     public CsrfController csrfController() { return new CsrfController(); }
@@ -486,6 +493,40 @@ public class SecurityModuleAutoConfiguration {
         return new FieldMaskingService();
     }
 
+    // =================================================================
+    // Tenant membership (multi-tenant session switching)
+    // =================================================================
+
+    @Bean @ConditionalOnMissingBean(TenantMembershipPort.class)
+    @ConditionalOnProperty(name = "erp.security.persistence.type", havingValue = "jpa", matchIfMissing = true)
+    public TenantMembershipPort tenantMembershipPort(
+            ObjectProvider<SpringDataTenantMembershipRepository> repoProvider) {
+        SpringDataTenantMembershipRepository repo = repoProvider.getIfAvailable();
+        if (repo != null) {
+            log.info("TenantMembershipPort: using JPA");
+            return new JpaTenantMembershipAdapter(repo);
+        }
+        log.info("TenantMembershipPort: JPA repo missing -> memory fallback");
+        return new InMemoryTenantMembershipAdapter();
+    }
+
+    @Bean @ConditionalOnMissingBean(TenantMembershipPort.class)
+    public TenantMembershipPort inMemoryTenantMembershipPort() {
+        log.info("TenantMembershipPort: explicit memory bean");
+        return new InMemoryTenantMembershipAdapter();
+    }
+
+    @Bean @ConditionalOnProperty(name = "erp.security.enabled", matchIfMissing = true)
+    public TenantSwitchController tenantSwitchController(CurrentActorProvider p,
+                                                         TenantMembershipPort m,
+                                                         ApplicationEventPublisher e) {
+        return new TenantSwitchController(p, m, e);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public TenantModelAdvice tenantModelAdvice(CurrentActorProvider p, TenantMembershipPort m) {
+        return new TenantModelAdvice(p, m);
+    }
     // Scheduled cleanup
     // =================================================================
 

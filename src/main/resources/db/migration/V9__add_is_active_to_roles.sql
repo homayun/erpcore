@@ -1,1 +1,1 @@
-ALTER TABLE sec_role ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
+-- V9 no-op: is_active column is already defined in V3 (Path A).

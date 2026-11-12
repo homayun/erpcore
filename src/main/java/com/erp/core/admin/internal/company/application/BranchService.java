@@ -21,7 +21,15 @@ public class BranchService {
 
     @Transactional(readOnly = true)
     public List<Branch> getBranches(UUID tenantId, String filter) {
-        List<BranchEntity> list = branchRepo.findByTenantId(tenantId);
+        return applyFilter(branchRepo.findByTenantId(tenantId), filter);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Branch> getBranchesByDivision(UUID tenantId, UUID divisionId, String filter) {
+        return applyFilter(branchRepo.findByTenantAndDivision(tenantId, divisionId), filter);
+    }
+
+    private List<Branch> applyFilter(List<BranchEntity> list, String filter) {
         if ("active".equals(filter)) return list.stream().filter(BranchEntity::isActive).map(BranchEntity::toDomain).toList();
         if ("deleted".equals(filter)) return list.stream().filter(e -> !e.isActive()).map(BranchEntity::toDomain).toList();
         return list.stream().map(BranchEntity::toDomain).toList();

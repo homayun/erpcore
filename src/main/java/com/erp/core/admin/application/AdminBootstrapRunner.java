@@ -9,6 +9,7 @@ import com.erp.core.security.internal.authentication.port.PasswordHashingPort;
 import com.erp.core.security.internal.authorization.domain.PermissionDefinition;
 import com.erp.core.security.internal.authorization.domain.PermissionKey;
 import com.erp.core.security.internal.authorization.port.PermissionRepositoryPort;
+import com.erp.core.security.internal.tenant.port.TenantMembershipPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -20,11 +21,11 @@ import java.util.UUID;
 public class AdminBootstrapRunner implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(AdminBootstrapRunner.class);
-
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String PERM_USER_MANAGE = "ADMIN_USER_MANAGE";
     private static final String PERM_ROLE_MANAGE = "ADMIN_ROLE_MANAGE";
     private static final String PERM_FIELD_RULE_MANAGE = "ADMIN_FIELD_RULE_MANAGE";
+    private static final String PERM_TENANT_MANAGE     = "TENANT_MANAGE";
 
     private final AdminBootstrapProperties props;
     private final CredentialRepositoryPort credentialRepo;
@@ -32,19 +33,22 @@ public class AdminBootstrapRunner implements ApplicationRunner {
     private final PasswordPolicy policy;
     private final PermissionRepositoryPort permissionRepo;
     private final AdminRolePort rolePort;
+    private final TenantMembershipPort membership;
 
     public AdminBootstrapRunner(AdminBootstrapProperties props,
                                 CredentialRepositoryPort credentialRepo,
                                 PasswordHashingPort hasher,
                                 PasswordPolicy policy,
                                 PermissionRepositoryPort permissionRepo,
-                                AdminRolePort rolePort) {
+                                AdminRolePort rolePort,
+                                TenantMembershipPort membership) {
         this.props = props;
         this.credentialRepo = credentialRepo;
         this.hasher = hasher;
         this.policy = policy;
         this.permissionRepo = permissionRepo;
         this.rolePort = rolePort;
+        this.membership = membership;
     }
 
     @Override
@@ -70,13 +74,16 @@ public class AdminBootstrapRunner implements ApplicationRunner {
                 new PermissionDefinition(PermissionKey.of(PERM_ROLE_MANAGE),
                         "ADMIN", "Manage roles", true),
                 new PermissionDefinition(PermissionKey.of(PERM_FIELD_RULE_MANAGE),
-                        "ADMIN", "Manage field authorization rules", true)
+                        "ADMIN", "Manage field authorization rules", true),
+                new PermissionDefinition(PermissionKey.of(PERM_TENANT_MANAGE),
+                        "PLATFORM", "Create and manage tenants", true)
         ));
 
         UUID roleId = rolePort.ensureRole(props.tenantId(), ROLE_ADMIN, 100);
         rolePort.grantPermission(roleId, PERM_USER_MANAGE);
         rolePort.grantPermission(roleId, PERM_ROLE_MANAGE);
         rolePort.grantPermission(roleId, PERM_FIELD_RULE_MANAGE);
+        rolePort.grantPermission(roleId, PERM_TENANT_MANAGE);
 
         var existing = credentialRepo.findByUsernameAndTenant(props.tenantId(), props.username());
         UUID actorId;
@@ -90,6 +97,9 @@ public class AdminBootstrapRunner implements ApplicationRunner {
             actorId = existing.get().actorId();
             log.debug("Bootstrap admin user already exists: {}", props.username());
         }
+
+        // Ensure the admin actor is a member of its tenant (idempotent).
+        membership.ensureMembership(actorId, props.tenantId());
 
         rolePort.ensureAssignment(actorId, roleId, props.tenantId());
         log.info("Bootstrap complete: admin user ready (role={}, actorId={})", ROLE_ADMIN, actorId);
