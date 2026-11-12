@@ -22,7 +22,7 @@ public record SecurityProperties(
             defaultTenantHeader = "X-Tenant-Id";
         }
         if (persistence == null) persistence = new Persistence(null);
-        if (login == null) login = new Login(null);
+        if (login == null) login = new Login(null, null);
         if (logout == null) logout = new Logout(null);
         if (jwt == null) jwt = new Jwt(null, null, null, null);
         if (refreshToken == null) refreshToken = new RefreshToken(null, null);
@@ -31,14 +31,24 @@ public record SecurityProperties(
         if (redis == null) redis = new Redis(false);
     }
 
-    /** Persistence backend: "jpa" (default) or "memory". */
     public record Persistence(String type) {
         public Persistence {
             if (type == null || type.isBlank()) type = "jpa";
         }
     }
 
-    public record Login(String processingUrl) {
+    /**
+     * Login configuration.
+     *
+     * @param processingUrl   the login POST endpoint (default {@code /login}).
+     * @param defaultTenantId OPTIONAL UUID applied when the request body does
+     *                        not include a {@code tenantId}. For single-tenant
+     *                        on-prem deployments set this to the customer's
+     *                        tenant UUID. For multi-tenant SaaS leave it blank
+     *                        — login fails closed (401) if the client omits
+     *                        {@code tenantId}.
+     */
+    public record Login(String processingUrl, String defaultTenantId) {
         public Login {
             if (processingUrl == null || processingUrl.isBlank()) processingUrl = "/login";
         }
@@ -53,9 +63,7 @@ public record SecurityProperties(
     public record Jwt(String issuer, String secret, Duration accessTtl, Duration clockSkew) {
         public Jwt {
             if (issuer == null || issuer.isBlank()) issuer = "erp-core";
-            if (secret == null || secret.isBlank()) {
-                secret = "change-me-change-me-change-me-32-chars";
-            }
+            if (secret == null || secret.isBlank()) secret = "change-me-change-me-change-me-32-chars";
             if (accessTtl == null) accessTtl = Duration.ofMinutes(15);
             if (clockSkew == null) clockSkew = Duration.ofSeconds(30);
         }
@@ -75,7 +83,6 @@ public record SecurityProperties(
         }
     }
 
-    /** Scheduled cleanup of expired/stale refresh tokens. */
     public record Cleanup(String cron, Duration retention) {
         public Cleanup {
             if (cron == null || cron.isBlank()) cron = "0 0 3 * * *";
@@ -83,7 +90,5 @@ public record SecurityProperties(
         }
     }
 
-    /** Redis-backed rate limiting / lockout opt-in. */
-    public record Redis(boolean enabled) {
-    }
+    public record Redis(boolean enabled) { }
 }

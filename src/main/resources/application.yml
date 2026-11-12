@@ -1,12 +1,12 @@
 # =====================================================================
-# ErpCore Security Module ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â base configuration (dev/test profile)
+# ErpCore Security Module ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â base configuration (dev/test profile)
 # =====================================================================
 # Production overrides live in application-prod.yml.
 #
 # SECRETS: NEVER hardcode here. Use environment variables.
-#   JWT_SECRET                        ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ set to 32+ random bytes
-#   ERP_ADMIN_BOOTSTRAP_PASSWORD      ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ dev only, never prod
-#   REDIS_PASSWORD                    ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ if Redis requires auth
+#   JWT_SECRET                        ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ set to 32+ random bytes
+#   ERP_ADMIN_BOOTSTRAP_PASSWORD      ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ dev only, never prod
+#   REDIS_PASSWORD                    ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ if Redis requires auth
 # =====================================================================
 
 spring:
@@ -19,7 +19,7 @@ spring:
     password: ""
     driver-class-name: org.h2.Driver
 
-  # Flyway owns the schema. Hibernate only validates ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â never mutates.
+  # Flyway owns the schema. Hibernate only validates ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â never mutates.
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -62,6 +62,13 @@ erp:
 
     persistence:
       type: jpa                # jpa (default) | memory
+
+    # Tenant resolution for /login when the request body omits tenantId.
+    # - Single-tenant on-prem: set ERP_DEFAULT_TENANT_ID env var to your tenant UUID.
+    # - Multi-tenant SaaS: leave unset; login fails closed (401).
+    login:
+      processing-url: /login
+      default-tenant-id: ${ERP_DEFAULT_TENANT_ID:}
 
     jwt:
       issuer: erp-core

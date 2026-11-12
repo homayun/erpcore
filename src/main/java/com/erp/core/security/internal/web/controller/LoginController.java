@@ -29,12 +29,21 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Authentication endpoint.
+ *
+ * Tenant resolution priority (first match wins):
+ * 1) tenantId in request body (per-call override)
+ * 2) erp.security.login.default-tenant-id (per-deployment config)
+ *
+ * Returns 401 if neither is set — never falls back to a hardcoded tenant.
+ *
+ * Deployment models:
+ * - Single-tenant on-prem: set default-tenant-id; users enter username+password.
+ * - Multi-tenant SaaS: leave default-tenant-id empty; clients MUST send tenantId.
+ */
 @RestController
 public class LoginController {
-
-    /** Fallback tenant ID used when the request does not specify one (single-tenant UI mode). */
-    private static final UUID FALLBACK_TENANT_ID =
-            UUID.fromString("11111111-1111-1111-1111-111111111111");
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenIssuer jwtIssuer;
@@ -44,7 +53,6 @@ public class LoginController {
     private final CredentialStatusPort statusPort;
     private final UUID defaultTenantId;
 
-    /** 6-arg constructor used by SecurityModuleAutoConfiguration (single-tenant default). */
     public LoginController(AuthenticationManager authenticationManager,
                            JwtTokenIssuer jwtIssuer,
                            RefreshTokenService refreshService,
@@ -52,10 +60,9 @@ public class LoginController {
                            SecurityProperties props,
                            CredentialStatusPort statusPort) {
         this(authenticationManager, jwtIssuer, refreshService, lockoutPort, props, statusPort,
-             FALLBACK_TENANT_ID);
+             parseUuid(props.login().defaultTenantId()));
     }
 
-    /** 7-arg constructor for tests / multi-tenant wiring. */
     public LoginController(AuthenticationManager authenticationManager,
                            JwtTokenIssuer jwtIssuer,
                            RefreshTokenService refreshService,
@@ -77,7 +84,10 @@ public class LoginController {
                                    HttpServletRequest httpRequest,
                                    HttpServletResponse response) {
         try {
-            UUID tenantId = request.tenantId() != null ? request.tenantId() : defaultTenantId;
+            UUID tenantId = resolveTenant(request);
+            if (tenantId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
 
             Authentication auth = authenticationManager.authenticate(
                     new ErpAuthenticationToken(tenantId, request.username(), request.password()));
@@ -93,7 +103,6 @@ public class LoginController {
 
             lockoutPort.recordSuccess(user.actorId());
 
-            // Persist SecurityContext into HTTP session so browser requests are authenticated.
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(auth);
             SecurityContextHolder.setContext(context);
@@ -118,6 +127,20 @@ public class LoginController {
                     user.actorId(), user.tenantId(), user.getUsername()));
         } catch (AuthenticationException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    private UUID resolveTenant(LoginRequest request) {
+        if (request.tenantId() != null) return request.tenantId();
+        return defaultTenantId;
+    }
+
+    private static UUID parseUuid(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return UUID.fromString(value.trim());
+        } catch (IllegalArgumentException ex) {
+            return null;
         }
     }
 
