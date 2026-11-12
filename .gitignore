@@ -70,3 +70,10 @@ application-local.yaml
 # ---- Security audit artifacts ----
 **/surefire-reports/
 target/surefire-reports/
+
+# ---- Session backups (never commit) ----
+*.p1.broken
+*.p1.bak
+*.before-fix
+*.broken
+
