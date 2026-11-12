@@ -1,12 +1,12 @@
 # =====================================================================
-# ErpCore Security Module — base configuration (dev/test profile)
+# ErpCore Security Module ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â base configuration (dev/test profile)
 # =====================================================================
 # Production overrides live in application-prod.yml.
 #
 # SECRETS: NEVER hardcode here. Use environment variables.
-#   JWT_SECRET                        → set to 32+ random bytes
-#   ERP_ADMIN_BOOTSTRAP_PASSWORD      → dev only, never prod
-#   REDIS_PASSWORD                    → if Redis requires auth
+#   JWT_SECRET                        ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ set to 32+ random bytes
+#   ERP_ADMIN_BOOTSTRAP_PASSWORD      ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ dev only, never prod
+#   REDIS_PASSWORD                    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ if Redis requires auth
 # =====================================================================
 
 spring:
@@ -19,7 +19,7 @@ spring:
     password: ""
     driver-class-name: org.h2.Driver
 
-  # Flyway owns the schema. Hibernate only validates — never mutates.
+  # Flyway owns the schema. Hibernate only validates ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â never mutates.
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -28,7 +28,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate            # ← was 'update' — silent schema drift
+      ddl-auto: validate            # ÃƒÂ¢Ã¢â‚¬Â Ã‚Â was 'update' ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â silent schema drift
     show-sql: false
     open-in-view: false
     properties:
@@ -39,6 +39,8 @@ spring:
 
   data:
     redis:
+        repositories:
+          enabled: false
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
@@ -65,13 +67,12 @@ erp:
 
     jwt:
       issuer: erp-core
-      secret: ${JWT_SECRET:change-me-change-me-change-me-32-chars}
+      secret: ${JWT_SECRET}
       # The line above *intentionally* uses the placeholder so JwtSecretGuard
       # detects it. In dev, set the flag below. In prod, ALWAYS set JWT_SECRET
       # and NEVER set the flag.
       access-ttl: PT15M
       clock-skew: PT30S
-      allow-insecure-default-secret: true     # DEV ONLY — prod must not set this
 
     refresh-token:
       ttl: P30D

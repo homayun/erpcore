@@ -1,0 +1,14 @@
+# =====================================================================
+# Test-only defaults — NOT used by production build
+# =====================================================================
+erp:
+  security:
+    jwt:
+      # Test uses the guard's dev allow flag so app boots without env vars
+      allow-insecure-default-secret: true
+    admin:
+      bootstrap:
+        enabled: true
+        tenant-id: 11111111-1111-1111-1111-111111111111
+        username: admin
+        password: AdminPassword1!

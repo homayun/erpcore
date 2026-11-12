@@ -1,0 +1,97 @@
+# =====================================================================
+# ErpCore Security Module â€” base configuration (dev/test profile)
+# =====================================================================
+# Production overrides live in application-prod.yml.
+#
+# SECRETS: NEVER hardcode here. Use environment variables.
+#   JWT_SECRET                        â†’ set to 32+ random bytes
+#   ERP_ADMIN_BOOTSTRAP_PASSWORD      â†’ dev only, never prod
+#   REDIS_PASSWORD                    â†’ if Redis requires auth
+# =====================================================================
+
+spring:
+  application:
+    name: erp-security-module
+
+  datasource:
+    url: jdbc:h2:mem:security;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+
+  # Flyway owns the schema. Hibernate only validates â€” never mutates.
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate            # â† was 'update' â€” silent schema drift
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+      connect-timeout: 2s
+      repositories:
+        enabled: false
+
+server:
+  # Dev-only: allow fall-through to default error handling.
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+    include-exception: false
+
+erp:
+  security:
+    enabled: true
+    default-tenant-header: "X-Tenant-Id"
+
+    persistence:
+      type: jpa                # jpa (default) | memory
+
+    jwt:
+      issuer: erp-core
+      secret: ${JWT_SECRET}
+      # The line above *intentionally* uses the placeholder so JwtSecretGuard
+      # detects it. In dev, set the flag below. In prod, ALWAYS set JWT_SECRET
+      # and NEVER set the flag.
+      access-ttl: PT15M
+      clock-skew: PT30S
+      allow-insecure-default-secret: true     # DEV ONLY â€” prod must not set this
+
+    refresh-token:
+      ttl: P30D
+      cookie-name: "erp_refresh"
+
+    lockout:
+      max-failed-attempts: 5
+      lock-duration: PT15M
+
+    redis:
+      enabled: false
+
+    cleanup:
+      enabled: true
+      cron: "0 0 3 * * *"
+      retention: P7D
+
+    admin:
+      bootstrap:
+        enabled: ${ERP_ADMIN_BOOTSTRAP_ENABLED:false}
+        tenant-id: ${ERP_ADMIN_BOOTSTRAP_TENANT_ID:}
+        username: ${ERP_ADMIN_BOOTSTRAP_USERNAME:}
+        password: ${ERP_ADMIN_BOOTSTRAP_PASSWORD:}

@@ -1,0 +1,22 @@
+# =====================================================================
+# Dev profile — activate with: --spring.profiles.active=dev
+# =====================================================================
+# This file ONLY makes sense for local development on a laptop.
+# NEVER activate this profile in production or shared environments.
+#
+# Every insecure default below is deliberately opt-in. Production must
+# set real values via environment variables (see application-prod.yml).
+# =====================================================================
+
+erp:
+  security:
+    jwt:
+      # Allows app to boot with the placeholder secret. JwtSecretGuard
+      # emits a loud WARN every startup when this is set.
+      allow-insecure-default-secret: true
+    admin:
+      bootstrap:
+        enabled: true
+        tenant-id: 11111111-1111-1111-1111-111111111111
+        username: admin
+        password: ${ERP_ADMIN_BOOTSTRAP_PASSWORD:AdminPassword1!}
