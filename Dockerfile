@@ -1,44 +1,35 @@
 # ============================================================
 # ErpCore quickstart — Render deployment
-# Multi-stage build, correct mvnw path, PORT env handling
 # ============================================================
-
-# ---- Stage 1: Build ----
 FROM eclipse-temurin:25-jdk-alpine AS build
 
 WORKDIR /app
 
-# Layer caching: dependency downloads first
+# Layer-cache dependency downloads
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
+RUN chmod +x mvnw && ./mvnw -B dependency:go-offline -q
 
-RUN chmod +x mvnw && ./mvnw -B dependency:go-offline
-
-# Copy security module source
+# Build security module
 COPY src ./src
+RUN ./mvnw -B install -DskipTests -q
 
-# Install erp-security-module to local .m2
-RUN ./mvnw -B install -DskipTests
-
-# Quickstart: use ROOT mvnw with -f, NOT a wrapper that doesn't exist
+# Build quickstart using ROOT mvnw with -f
 COPY examples/quickstart-app/pom.xml examples/quickstart-app/pom.xml
-RUN ./mvnw -B -f examples/quickstart-app/pom.xml dependency:go-offline
+RUN ./mvnw -B -f examples/quickstart-app/pom.xml dependency:go-offline -q
 
 COPY examples/quickstart-app/src examples/quickstart-app/src
-RUN ./mvnw -B -f examples/quickstart-app/pom.xml package -DskipTests
+RUN ./mvnw -B -f examples/quickstart-app/pom.xml package -DskipTests -q
 
-# ---- Stage 2: Runtime ----
+# ---- Runtime ----
 FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
-
-# Copy the built fat jar
 COPY --from=build /app/examples/quickstart-app/target/quickstart-app-1.0.0.jar app.jar
 
-# Non-root user (security best practice on Render)
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
-# Render injects $PORT at runtime — bind to it (fallback 8080 for local test)
+# Render injects $PORT — bind to it
 ENTRYPOINT ["sh", "-c", "exec java -jar /app/app.jar --server.port=${PORT:-8080}"]

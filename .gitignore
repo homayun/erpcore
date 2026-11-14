@@ -82,3 +82,6 @@ _backup_*/
 _backup_yaml_*/
 _backup_config_*/
 run-local.ps1
+
+# Local H2 file database (never commit)
+examples/quickstart-app/data/
