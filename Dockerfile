@@ -1,28 +1,44 @@
-FROM eclipse-temurin:25-jdk-alpine
+# ============================================================
+# ErpCore quickstart — Render deployment
+# Multi-stage build, correct mvnw path, PORT env handling
+# ============================================================
 
-# Set working directory
+# ---- Stage 1: Build ----
+FROM eclipse-temurin:25-jdk-alpine AS build
+
 WORKDIR /app
 
-# Copy the entire project
-COPY . .
+# Layer caching: dependency downloads first
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
-# Grant execute permission to the Maven wrapper (required on Linux)
-RUN chmod +x mvnw
+RUN chmod +x mvnw && ./mvnw -B dependency:go-offline
 
-# Build the security module and install it to the local m2 repository
-RUN ./mvnw clean install -DskipTests
+# Copy security module source
+COPY src ./src
 
-# Go to the quickstart app directory
-WORKDIR /app/examples/quickstart-app
+# Install erp-security-module to local .m2
+RUN ./mvnw -B install -DskipTests
 
-# Make mvnw executable here too
-RUN chmod +x mvnw
+# Quickstart: use ROOT mvnw with -f, NOT a wrapper that doesn't exist
+COPY examples/quickstart-app/pom.xml examples/quickstart-app/pom.xml
+RUN ./mvnw -B -f examples/quickstart-app/pom.xml dependency:go-offline
 
-# Build the quickstart app
-RUN ./mvnw clean package -DskipTests
+COPY examples/quickstart-app/src examples/quickstart-app/src
+RUN ./mvnw -B -f examples/quickstart-app/pom.xml package -DskipTests
 
-# The quickstart app will run on port 8080
-EXPOSE 8080
+# ---- Stage 2: Runtime ----
+FROM eclipse-temurin:25-jre-alpine
 
-# Start the quickstart app
-CMD ["java", "-jar", "target/quickstart-app-1.0.0.jar"]
+WORKDIR /app
+
+# Copy the built fat jar
+COPY --from=build /app/examples/quickstart-app/target/quickstart-app-1.0.0.jar app.jar
+
+# Non-root user (security best practice on Render)
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
+# Render injects $PORT at runtime — bind to it (fallback 8080 for local test)
+ENTRYPOINT ["sh", "-c", "exec java -jar /app/app.jar --server.port=${PORT:-8080}"]
