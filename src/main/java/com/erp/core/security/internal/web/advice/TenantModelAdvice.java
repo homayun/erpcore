@@ -15,7 +15,7 @@ import java.util.UUID;
 @ControllerAdvice
 public class TenantModelAdvice {
 
-    private static final String CACHE_ATTR = "erp.tenant.membership.cache";
+    public  static final String CACHE_ATTR = "erp.tenant.membership.cache";
 
     private final CurrentActorProvider actorProvider;
     private final TenantMembershipPort membership;

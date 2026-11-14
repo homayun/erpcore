@@ -5,6 +5,7 @@ import com.erp.core.security.api.actor.CurrentActorProvider;
 import com.erp.core.security.internal.context.infrastructure.springsecurity.TenantContextRestorationFilter;
 import com.erp.core.security.internal.tenant.event.TenantSwitchedEvent;
 import com.erp.core.security.internal.tenant.port.TenantMembershipPort;
+import com.erp.core.security.internal.web.advice.TenantModelAdvice;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -67,8 +68,9 @@ public class TenantSwitchController {
                     .body(Map.of("error", "not a member of tenant"));
         }
         UUID previous = actor.tenantId();
-        request.getSession(true)
-                .setAttribute(TenantContextRestorationFilter.ACTIVE_TENANT_SESSION_ATTR, tenantId);
+        var session = request.getSession(true);
+        session.setAttribute(TenantContextRestorationFilter.ACTIVE_TENANT_SESSION_ATTR, tenantId);
+        session.removeAttribute(TenantModelAdvice.CACHE_ATTR);
         events.publishEvent(new TenantSwitchedEvent(actor.id(), previous, tenantId, Instant.now()));
         return ResponseEntity.ok(Map.of(
                 "activeTenantId", tenantId,

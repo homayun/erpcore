@@ -77,3 +77,8 @@ target/surefire-reports/
 *.before-fix
 *.broken
 
+
+_backup_*/
+_backup_yaml_*/
+_backup_config_*/
+run-local.ps1

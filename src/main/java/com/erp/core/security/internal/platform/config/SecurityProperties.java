@@ -26,7 +26,7 @@ public record SecurityProperties(
         if (logout == null) logout = new Logout(null);
         if (jwt == null) jwt = new Jwt(null, null, null, null);
         if (refreshToken == null) refreshToken = new RefreshToken(null, null);
-        if (lockout == null) lockout = new Lockout(0, null);
+        if (lockout == null) lockout = new Lockout(5, Duration.ofMinutes(15));
         if (cleanup == null) cleanup = new Cleanup(null, null);
         if (redis == null) redis = new Redis(false);
     }
@@ -65,21 +65,31 @@ public record SecurityProperties(
             if (issuer == null || issuer.isBlank()) issuer = "erp-core";
             if (secret == null || secret.isBlank()) secret = "change-me-change-me-change-me-32-chars";
             if (accessTtl == null) accessTtl = Duration.ofMinutes(15);
+            else if (accessTtl.isNegative() || accessTtl.isZero())
+                throw new IllegalArgumentException("erp.security.jwt.access-ttl must be > 0");
             if (clockSkew == null) clockSkew = Duration.ofSeconds(30);
+            else if (clockSkew.isNegative())
+                throw new IllegalArgumentException("erp.security.jwt.clock-skew must be >= 0");
         }
     }
 
     public record RefreshToken(Duration ttl, String cookieName) {
         public RefreshToken {
             if (ttl == null) ttl = Duration.ofDays(30);
+            else if (ttl.isNegative() || ttl.isZero())
+                throw new IllegalArgumentException("erp.security.refresh-token.ttl must be > 0");
             if (cookieName == null || cookieName.isBlank()) cookieName = "erp_refresh";
         }
     }
 
     public record Lockout(int maxFailedAttempts, Duration lockDuration) {
         public Lockout {
-            if (maxFailedAttempts <= 0) maxFailedAttempts = 5;
-            if (lockDuration == null) lockDuration = Duration.ofMinutes(15);
+            if (maxFailedAttempts <= 0)
+                throw new IllegalArgumentException("erp.security.lockout.max-failed-attempts must be > 0");
+            if (lockDuration == null)
+                throw new IllegalArgumentException("erp.security.lockout.lock-duration is required");
+            if (lockDuration.isNegative() || lockDuration.isZero())
+                throw new IllegalArgumentException("erp.security.lockout.lock-duration must be > 0");
         }
     }
 
@@ -87,6 +97,8 @@ public record SecurityProperties(
         public Cleanup {
             if (cron == null || cron.isBlank()) cron = "0 0 3 * * *";
             if (retention == null) retention = Duration.ofDays(7);
+            else if (retention.isNegative() || retention.isZero())
+                throw new IllegalArgumentException("erp.security.cleanup.retention must be > 0");
         }
     }
 

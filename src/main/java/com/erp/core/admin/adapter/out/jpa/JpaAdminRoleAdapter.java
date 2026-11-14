@@ -83,10 +83,7 @@ public class JpaAdminRoleAdapter implements AdminRolePort {
     @Override @Transactional(readOnly = true)
     public List<RoleView> listRoles(UUID tenantId) {
         return roleRepo.findByTenantId(tenantId).stream().map(r -> {
-            var perms = new HashSet<String>();
-            rolePermissionRepo.findAll().stream()
-                    .filter(rp -> rp.getRoleId().equals(r.getId()))
-                    .forEach(rp -> perms.add(rp.getPermissionKey()));
+            Set<String> perms = new HashSet<>(rolePermissionRepo.findPermissionKeysByRoleId(r.getId()));
             return new RoleView(r.getId(), r.getTenantId(), r.getName(), r.getHierarchyLevel(), perms, r.isActive());
         }).collect(Collectors.toList());
     }

@@ -1,12 +1,12 @@
 # =====================================================================
-# ErpCore Security Module ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â base configuration (dev/test profile)
+# ErpCore Security Module - base configuration (dev/test profile)
 # =====================================================================
 # Production overrides live in application-prod.yml.
 #
 # SECRETS: NEVER hardcode here. Use environment variables.
-#   JWT_SECRET                        ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ set to 32+ random bytes
-#   ERP_ADMIN_BOOTSTRAP_PASSWORD      ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ dev only, never prod
-#   REDIS_PASSWORD                    ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ if Redis requires auth
+#   JWT_SECRET                    - set to 32+ random bytes
+#   ERP_ADMIN_BOOTSTRAP_PASSWORD  - dev only, never prod
+#   REDIS_PASSWORD                - if Redis requires auth
 # =====================================================================
 
 spring:
@@ -19,7 +19,7 @@ spring:
     password: ""
     driver-class-name: org.h2.Driver
 
-  # Flyway owns the schema. Hibernate only validates ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â never mutates.
+  # Flyway owns the schema. Hibernate only validates - never mutates.
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -28,7 +28,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate            # was update -- silent schema drift
+      ddl-auto: validate
     show-sql: false
     open-in-view: false
     properties:
@@ -48,7 +48,6 @@ spring:
         enabled: false
 
 server:
-  # Dev-only: allow fall-through to default error handling.
   error:
     include-stacktrace: never
     include-message: never
@@ -61,11 +60,8 @@ erp:
     default-tenant-header: "X-Tenant-Id"
 
     persistence:
-      type: jpa                # jpa (default) | memory
+      type: jpa
 
-    # Tenant resolution for /login when the request body omits tenantId.
-    # - Single-tenant on-prem: set ERP_DEFAULT_TENANT_ID env var to your tenant UUID.
-    # - Multi-tenant SaaS: leave unset; login fails closed (401).
     login:
       processing-url: /login
       default-tenant-id: ${ERP_DEFAULT_TENANT_ID:}
@@ -73,9 +69,6 @@ erp:
     jwt:
       issuer: erp-core
       secret: ${JWT_SECRET}
-      # The line above *intentionally* uses the placeholder so JwtSecretGuard
-      # detects it. In dev, set the flag below. In prod, ALWAYS set JWT_SECRET
-      # and NEVER set the flag.
       access-ttl: PT15M
       clock-skew: PT30S
 
