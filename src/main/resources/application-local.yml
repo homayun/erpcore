@@ -1,0 +1,77 @@
+# =====================================================================
+# Local development against PostgreSQL
+# - Active with: -Dspring-boot.run.profiles=local
+# - NOT for production. Uses dev-friendly defaults.
+# =====================================================================
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/erpcore}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: erp-local-pool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  h2:
+    console:
+      enabled: false
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      cookie:
+        secure: false
+        http-only: true
+        same-site: lax
+      timeout: 30m
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+    include-exception: false
+
+erp:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:local-dev-only-secret-replace-me-32-chars-min!}
+      allow-insecure-default-secret: true
+
+    redis:
+      enabled: ${ERP_REDIS_ENABLED:false}
+
+    login:
+      default-tenant-id: "11111111-1111-1111-1111-111111111111"
+
+    admin:
+      bootstrap:
+        enabled: true
+        tenant-id: 11111111-1111-1111-1111-111111111111
+        username: admin
+        password: ${ERP_ADMIN_BOOTSTRAP_PASSWORD:AdminPassword1!}
+
+logging:
+  level:
+    root: INFO
+    com.erp: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    SECURITY_AUDIT: INFO
+    org.flywaydb: INFO
