@@ -46,6 +46,13 @@ erp:
     enabled: true
     jwt:
       secret: "quickstart-app-demo-secret-key-32-chars-long"
+
+    # ── CRITICAL: login form has no tenantId field ──
+    # Without this, resolveTenant() returns null → 401 on every login
+    login:
+      processing-url: /login
+      default-tenant-id: "11111111-1111-1111-1111-111111111111"
+
     admin:
       bootstrap:
         enabled: true
