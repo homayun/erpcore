@@ -1,4 +1,4 @@
-target/
+﻿target/
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
@@ -62,7 +62,7 @@ full-test.log
 *.rej
 
 # ---- Local overrides ----
-application-local.yml
+# application-local.yml  # now tracked (no secrets — env vars only)
 application-local.yaml
 .env
 .env.local
